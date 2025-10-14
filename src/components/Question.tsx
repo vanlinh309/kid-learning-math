@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Card, Row, Col, Button } from 'react-bootstrap'
+import { Card, Row, Col } from 'react-bootstrap'
 import { useAudioFeedback } from '../hooks/useAudioFeedback'
 import './Question.css'
 
@@ -7,7 +7,7 @@ export interface Answer {
   id: string
   isCorrect: boolean
   blocks: {
-    shape: 'square' | 'triangle' | 'circle' | 'rectangle' | 'diamond' | ''
+    shape: 'square' | 'triangle' | 'circle' | 'rectangle' | 'diamond'
     number: number
   }[]
 }

@@ -21,13 +21,6 @@ const MainContent: React.FC<MainContentProps> = ({ selectedLesson }) => {
     setSelectedAnswerId(answerId)
   }
 
-  const handleNextQuestion = () => {
-    if (selectedLesson && currentQuestionIndex < selectedLesson.questions.length - 1) {
-      setCurrentQuestionIndex(prev => prev + 1)
-      setSelectedAnswerId(undefined)
-    }
-  }
-
   return (
     <div className="h-100 d-flex flex-column">
       <Container fluid className="h-100 p-4">
