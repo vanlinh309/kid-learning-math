@@ -1,0 +1,25 @@
+<svg width="200" height="300" xmlns="http://www.w3.org/2000/svg">
+  <!-- Rocket Body -->
+  <ellipse cx="100" cy="200" rx="40" ry="80" fill="#e74c3c"/>
+  
+  <!-- Rocket Nose -->
+  <polygon points="100,80 70,160 130,160" fill="#f39c12"/>
+  
+  <!-- Rocket Windows -->
+  <circle cx="100" cy="140" r="15" fill="#3498db"/>
+  <circle cx="100" cy="140" r="10" fill="#ecf0f1"/>
+  
+  <!-- Rocket Fins -->
+  <polygon points="60,200 40,240 60,240" fill="#2c3e50"/>
+  <polygon points="140,200 160,240 140,240" fill="#2c3e50"/>
+  
+  <!-- Rocket Fire -->
+  <polygon points="80,280 100,320 120,280" fill="#e67e22"/>
+  <polygon points="85,285 100,310 115,285" fill="#f39c12"/>
+  
+  <!-- Stars -->
+  <circle cx="50" cy="50" r="2" fill="#f1c40f"/>
+  <circle cx="150" cy="40" r="2" fill="#f1c40f"/>
+  <circle cx="30" cy="100" r="2" fill="#f1c40f"/>
+  <circle cx="170" cy="90" r="2" fill="#f1c40f"/>
+</svg>
