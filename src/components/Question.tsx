@@ -9,6 +9,7 @@ export interface Answer {
   blocks: {
     shape: 'square' | 'triangle' | 'circle' | 'rectangle' | 'diamond'
     number: number
+    color?: string
   }[]
 }
 
@@ -51,11 +52,24 @@ const Question: React.FC<QuestionProps> = ({
     // This ensures the component resets when a new question is loaded
     // Currently, the Question component is stateless, but this is here for future enhancements
   }, [question.id])
-  const renderShape = (shape: 'square' | 'triangle' | 'circle' | 'rectangle' | 'diamond', size = 30) => {
+
+  // Helper function to convert Google Drive shareable link to embeddable format
+  const getEmbeddableGoogleDriveUrl = (url: string) => {
+    if (url.includes('drive.google.com/file/d/')) {
+      // Extract the file ID from the URL
+      const fileIdMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/)
+      if (fileIdMatch) {
+        const fileId = fileIdMatch[1]
+        return `https://drive.google.com/file/d/${fileId}/preview`
+      }
+    }
+    return url
+  }
+  const renderShape = (shape: 'square' | 'triangle' | 'circle' | 'rectangle' | 'diamond', size = 30, color = '#dc3545') => {
     const shapeStyle = {
       width: `${size}px`,
       height: `${size}px`,
-      backgroundColor: '#dc3545', // Bootstrap red
+      backgroundColor: color,
       display: 'inline-block',
       marginRight: '10px'
     }
@@ -71,7 +85,7 @@ const Question: React.FC<QuestionProps> = ({
               height: 0,
               borderLeft: `${size/2}px solid transparent`,
               borderRight: `${size/2}px solid transparent`,
-              borderBottom: `${size}px solid #dc3545`,
+              borderBottom: `${size}px solid ${color}`,
               display: 'inline-block',
               marginRight: '10px'
             }}
@@ -99,13 +113,13 @@ const Question: React.FC<QuestionProps> = ({
         return (
           <div
             style={{
-              width: 0,
-              height: 0,
-              borderLeft: `${size}px solid transparent`,
-              borderRight: `${size}px solid transparent`,
-              borderBottom: `${size}px solid #dc3545`,
+              width: `${size}px`,
+              height: `${size}px`,
+              backgroundColor: color,
               display: 'inline-block',
-              marginRight: '10px'
+              marginRight: '10px',
+              transform: 'rotate(45deg)',
+              transformOrigin: 'center'
             }}
           />
         )
@@ -204,7 +218,7 @@ const Question: React.FC<QuestionProps> = ({
                 key={index} 
                 className="d-flex align-items-center justify-content-center mb-3"
               >
-                {renderShape(block.shape)}
+                {renderShape(block.shape, 30, block.color)}
                 <span className="mx-3 fw-bold fs-4">=</span>
                 <span className="fs-4 fw-bold text-primary">{block.number}</span>
               </div>
@@ -228,11 +242,11 @@ const Question: React.FC<QuestionProps> = ({
               <Col xs={12} className="d-flex justify-content-center">
                 <div className="text-center">
                   <img 
-                    src={question.imageUrl} 
-                    alt="Question illustration"
-                    className="img-fluid rounded border"
-                    style={{ maxWidth: '400px', maxHeight: '450px', objectFit: 'contain' }}
-                  />
+                      src={question.imageUrl} 
+                      alt="Question illustration"
+                      className="img-fluid rounded border"
+                      style={{ maxWidth: '400px', maxHeight: '450px', objectFit: 'contain' }}
+                    />
                 </div>
               </Col>
             </Row>
