@@ -1,43 +1,17 @@
-import { useState } from 'react'
-import { Button } from 'react-bootstrap'
-import Layout from './components/Layout'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import HomePage from './components/HomePage'
 import AdminPage from './components/AdminPage'
 import './App.css'
 
 function App() {
-  const [isAdminMode, setIsAdminMode] = useState(false)
-
-  if (isAdminMode) {
-    return (
-      <div>
-        <div className="d-flex justify-content-between align-items-center bg-light p-3 border-bottom">
-          <h5 className="mb-0">Admin Mode</h5>
-          <Button 
-            variant="outline-secondary" 
-            size="sm"
-            onClick={() => setIsAdminMode(false)}
-          >
-            Back to Learning App
-          </Button>
-        </div>
-        <AdminPage />
-      </div>
-    )
-  }
-
   return (
-    <div>
-      <div className="d-flex justify-content-end p-3">
-        <Button 
-          variant="outline-dark" 
-          size="sm"
-          onClick={() => setIsAdminMode(true)}
-        >
-          Admin Panel
-        </Button>
-      </div>
-      <Layout />
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/admin" element={<AdminPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Router>
   )
 }
 

@@ -4,12 +4,16 @@ import type { QuestionData } from './Question'
 
 interface QuestionListProps {
   questions: QuestionData[]
+  savedQuestions: QuestionData[]
+  draftQuestions: QuestionData[]
   onEdit: (question: QuestionData) => void
   onDelete: (questionId: string) => void
 }
 
 const QuestionList: React.FC<QuestionListProps> = ({
   questions,
+  savedQuestions: _savedQuestions,
+  draftQuestions,
   onEdit,
   onDelete
 }) => {
@@ -17,6 +21,10 @@ const QuestionList: React.FC<QuestionListProps> = ({
     if (window.confirm('Are you sure you want to delete this question?')) {
       onDelete(questionId)
     }
+  }
+  
+  const isQuestionDraft = (questionId: string) => {
+    return draftQuestions.some(q => q.id === questionId)
   }
 
   const renderShapeBlocks = (question: QuestionData) => {
@@ -47,6 +55,7 @@ const QuestionList: React.FC<QuestionListProps> = ({
           <Table responsive hover>
             <thead>
               <tr>
+                <th>Status</th>
                 <th>ID</th>
                 <th>Title</th>
                 <th>Image</th>
@@ -57,7 +66,18 @@ const QuestionList: React.FC<QuestionListProps> = ({
             </thead>
             <tbody>
               {questions.map((question) => (
-                <tr key={question.id}>
+                <tr key={question.id} className={isQuestionDraft(question.id) ? 'table-warning' : ''}>
+                  <td>
+                    {isQuestionDraft(question.id) ? (
+                      <Badge bg="warning" className="text-dark">
+                        📝 Draft
+                      </Badge>
+                    ) : (
+                      <Badge bg="success">
+                        ✅ Saved
+                      </Badge>
+                    )}
+                  </td>
                   <td>
                     <Badge bg="primary">{question.id}</Badge>
                   </td>

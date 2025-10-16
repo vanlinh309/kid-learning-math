@@ -9,14 +9,20 @@ const generateUUID = (): string => {
 
 interface QuestionFormProps {
   question?: QuestionData | null
-  onSubmit: (question: QuestionData) => void
+  onSubmit: (question: QuestionData, formId?: string) => void
   onCancel?: () => void
+  showCardWrapper?: boolean
+  formId?: string
+  onTitleChange?: (title: string, formId?: string) => void
 }
 
 const QuestionForm: React.FC<QuestionFormProps> = ({
   question,
   onSubmit,
-  onCancel
+  onCancel,
+  showCardWrapper = true,
+  formId,
+  onTitleChange
 }) => {
   const [formData, setFormData] = useState<QuestionData>({
     id: generateUUID(),
@@ -58,6 +64,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
   const [imageLoading, setImageLoading] = useState<boolean>(false)
   const [imageError, setImageError] = useState<boolean>(false)
   const [activeColorPicker, setActiveColorPicker] = useState<string | null>(null)
+  const [showSuccess, setShowSuccess] = useState<boolean>(false)
 
 
   useEffect(() => {
@@ -111,6 +118,11 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
       ...prev,
       [field]: value
     }))
+    
+    // Notify parent when title changes
+    if (field === 'title' && onTitleChange) {
+      onTitleChange(value, formId)
+    }
   }
 
   const handleBlockChange = (answerIndex: number, blockIndex: number, field: 'shape' | 'number' | 'color', value: string | number) => {
@@ -143,7 +155,15 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
     }))
   }
 
-
+  const handleAnswerDoubleClick = (answerIndex: number) => {
+    setFormData(prev => ({
+      ...prev,
+      answers: prev.answers.map((answer, index) => ({
+        ...answer,
+        isCorrect: index === answerIndex ? !answer.isCorrect : false
+      }))
+    }))
+  }
 
   const validateForm = (): boolean => {
     if (!formData.title.trim()) {
@@ -175,10 +195,14 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
         ...formData,
         id: formData.id || generateUUID()
       }
-      onSubmit(questionToSubmit)
+      onSubmit(questionToSubmit, formId)
       
-      // Reset form with new UUID for next question (if not editing)
+      // Show success message and reset form for next question (if not editing)
       if (!question) {
+        setShowSuccess(true)
+        // Hide success message after 3 seconds
+        setTimeout(() => setShowSuccess(false), 3000)
+        
         setFormData({
           id: generateUUID(),
           title: '',
@@ -285,13 +309,15 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
     }
   }
 
-  return (
-    <Card>
-      <Card.Header>
-        <h4>{question ? 'Edit Question' : 'Add New Question'}</h4>
-      </Card.Header>
-      <Card.Body>
+  const formContent = (
+    <div className={showCardWrapper ? '' : 'p-3'}>
         {error && <Alert variant="danger">{error}</Alert>}
+        {showSuccess && (
+          <Alert variant="success" className="d-flex align-items-center">
+            <span className="me-2">✅</span>
+            <span>Question added successfully! You can add another question below.</span>
+          </Alert>
+        )}
         
         <Form onSubmit={handleSubmit}>
           {/* Question Basic Info */}
@@ -322,10 +348,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
             {/* Image Preview - Auto-show when URL is present */}
             {showPreview && formData.imageUrl?.trim() && (
               <div className="mt-3 text-center">
-                <Card className="d-inline-block">
-                  <Card.Header className="py-2">
-                    <small className="text-muted">Image Preview</small>
-                  </Card.Header>
+                <Card className="d-inline-block">                  
                   <Card.Body className="p-3 position-relative">
                     {/* Loading Spinner */}
                     {imageLoading && !imageError && (
@@ -375,8 +398,8 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
                         <img 
                           src={formData.imageUrl} 
                           alt="Image preview"
-                          className="img-fluid rounded border"
-                          style={{ maxWidth: '400px', maxHeight: '300px', objectFit: 'contain' }}
+                          className="img-fluid rounded"
+                          style={{ maxWidth: '400px', maxHeight: '300px', objectFit: 'contain'}}
                           onLoad={() => {
                             setImageLoading(false)
                             setImageError(false)
@@ -408,14 +431,29 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
           </Form.Group>
 
           {/* Answers Section - 3 Blocks Horizontally */}
-          <h5 className="mb-3">Answers (Choose the correct one)</h5>
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <h5 className="mb-0">Answers (Choose the correct one)</h5>
+            <small className="text-muted">
+              💡 Double-click any answer to mark as correct
+            </small>
+          </div>
           <Row className="mb-4">
             {formData.answers.map((answer, answerIndex) => (
               <Col md={4} key={answer.id} className="mb-3">
-                <Card className="h-100 border-2">
-                  <Card.Header className="text-center py-2">
+                <Card 
+                  className={`h-100 border-2 ${answer.isCorrect ? 'border-success' : ''}`}
+                  onDoubleClick={() => handleAnswerDoubleClick(answerIndex)}
+                  style={{ cursor: 'pointer' }}
+                  title="Double-click to toggle as correct answer"
+                >
+                  <Card.Header 
+                    className={`text-center py-2 ${answer.isCorrect ? 'bg-success text-white' : ''}`}
+                  >
                     <div className="d-flex justify-content-between align-items-center">
-                      <strong>Answer {answerIndex + 1}</strong>
+                      <strong>
+                        {answer.isCorrect ? '✅ ' : ''}Answer {answerIndex + 1}
+                        {answer.isCorrect ? ' (Correct)' : ''}
+                      </strong>
                       <Form.Check
                         type="radio"
                         name="correctAnswer"
@@ -579,20 +617,44 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
           </Row>
 
           {/* Form Actions */}
-          <div className="d-flex gap-2">
-            <Button type="submit" variant="success">
-              {question ? 'Update Question' : 'Add Question'}
-            </Button>
-            {onCancel && (
-              <Button type="button" variant="secondary" onClick={onCancel}>
-                Cancel
-              </Button>
+          <div>
+            {!question && (
+              <div className="alert alert-info mb-3">
+                <small>
+                  <strong>💡 Tip:</strong> Click "Add Question" to add this question as a draft. 
+                  Go to "Manage Questions" and click "Save All Questions" to persist all your drafts.
+                </small>
+              </div>
             )}
+            <div className="d-flex gap-2">
+              <Button type="submit" variant={question ? "success" : "primary"}>
+                {question ? 'Update Question' : '📝 Add Question (Draft)'}
+              </Button>
+              {onCancel && (
+                <Button type="button" variant="secondary" onClick={onCancel}>
+                  Cancel
+                </Button>
+              )}
+            </div>
           </div>
         </Form>
-      </Card.Body>
-    </Card>
+    </div>
   )
+
+  if (showCardWrapper) {
+    return (
+      <Card>
+        <Card.Header>
+          <h4>{question ? 'Edit Question' : 'Add New Question'}</h4>
+        </Card.Header>
+        <Card.Body>
+          {formContent}
+        </Card.Body>
+      </Card>
+    )
+  }
+
+  return formContent
 }
 
 export default QuestionForm
