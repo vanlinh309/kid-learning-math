@@ -52,19 +52,7 @@ const Question: React.FC<QuestionProps> = ({
     // This ensures the component resets when a new question is loaded
     // Currently, the Question component is stateless, but this is here for future enhancements
   }, [question.id])
-
-  // Helper function to convert Google Drive shareable link to embeddable format
-  const getEmbeddableGoogleDriveUrl = (url: string) => {
-    if (url.includes('drive.google.com/file/d/')) {
-      // Extract the file ID from the URL
-      const fileIdMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/)
-      if (fileIdMatch) {
-        const fileId = fileIdMatch[1]
-        return `https://drive.google.com/file/d/${fileId}/preview`
-      }
-    }
-    return url
-  }
+  
   const renderShape = (shape: 'square' | 'triangle' | 'circle' | 'rectangle' | 'diamond', size = 30, color = '#dc3545') => {
     const shapeStyle = {
       width: `${size}px`,
