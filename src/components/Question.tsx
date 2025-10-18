@@ -94,7 +94,8 @@ const Question: React.FC<QuestionProps> = ({
           <div
             style={{
               ...shapeStyle,
-              borderRadius: '5px'
+              borderRadius: '5px',
+              width: `${size * 2.0}px`
             }}
           />
         )
@@ -209,7 +210,7 @@ const Question: React.FC<QuestionProps> = ({
               >
                 {renderShape(block.shape, 30, block.color)}
                 <span className="mx-3 fw-bold fs-4">=</span>
-                <span className="fs-4 fw-bold text-primary">{block.number}</span>
+                <span className="fs-4 fw-bold text-danger">{block.number}</span>
               </div>
             ))}
           </Card.Body>
