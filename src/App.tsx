@@ -9,6 +9,9 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/admin/questions" element={<AdminPage />} />
+        <Route path="/admin/questions/new" element={<AdminPage />} />
+        <Route path="/admin/edit" element={<AdminPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

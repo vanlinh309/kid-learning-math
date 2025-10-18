@@ -79,18 +79,24 @@ const MainContent: React.FC<MainContentProps> = ({ selectedLesson }) => {
                   <div className="d-flex justify-content-center gap-3">
                     <div className="text-center">
                       <div className="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style={{ width: '60px', height: '60px' }}>
-                        <span className="fs-4">📊</span>
+                        <span className="fs-4">�</span>
+                      </div>
+                      <p className="mt-2 mb-0 small">Recognizing Objects</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center" style={{ width: '60px', height: '60px' }}>
+                        <span className="fs-4">�</span>
                       </div>
                       <p className="mt-2 mb-0 small">Counting</p>
                     </div>
                     <div className="text-center">
-                      <div className="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center" style={{ width: '60px', height: '60px' }}>
-                        <span className="fs-4">🔧</span>
+                      <div className="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center" style={{ width: '60px', height: '60px' }}>
+                        <span className="fs-4">🔷</span>
                       </div>
-                      <p className="mt-2 mb-0 small">Building</p>
+                      <p className="mt-2 mb-0 small">Shapes</p>
                     </div>
                     <div className="text-center">
-                      <div className="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center" style={{ width: '60px', height: '60px' }}>
+                      <div className="bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center" style={{ width: '60px', height: '60px' }}>
                         <span className="fs-4">🎨</span>
                       </div>
                       <p className="mt-2 mb-0 small">Colors</p>

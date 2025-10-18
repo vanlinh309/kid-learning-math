@@ -17,6 +17,7 @@ export interface QuestionData {
   id: string
   title: string
   imageUrl?: string
+  category?: 'recognize_object' | 'counting' | 'shapes' | 'colors' | 'patterns'
   answers: Answer[]
 }
 

@@ -1,13 +1,72 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button, Container, Row, Col, Offcanvas } from 'react-bootstrap'
 import { List } from 'react-bootstrap-icons'
 import Sidebar from './Sidebar'
 import MainContent from './MainContent'
+import { fetchQuestionsWithAnswers } from '../utils/supabase'
 import type { LessonItem } from '../data/lessons'
+import type { QuestionData } from './Question'
 
 const Layout: React.FC = () => {
   const [sidebarVisible, setSidebarVisible] = useState(false)
   const [selectedLesson, setSelectedLesson] = useState<LessonItem | undefined>()
+  const [questionsData, setQuestionsData] = useState<QuestionData[]>([])
+  const [loading, setLoading] = useState(true)
+
+  // Fetch questions data on component mount
+  useEffect(() => {
+    const loadQuestions = async () => {
+      try {
+        setLoading(true)
+        const result = await fetchQuestionsWithAnswers()
+        
+        if (result.success && result.questions) {
+          // Convert database format to QuestionData format
+          const convertedQuestions: QuestionData[] = result.questions.map((dbQuestion: {
+            id: string;
+            title?: string;
+            image_url?: string;
+            category?: string;
+            answer?: Array<{
+              id: string;
+              is_correct: boolean;
+              content: Array<{
+                shape: string;
+                number: number;
+                color: string;
+              }>;
+            }>;
+          }) => ({
+            id: dbQuestion.id,
+            title: dbQuestion.title || 'Untitled Question',
+            imageUrl: dbQuestion.image_url || '',
+            category: dbQuestion.category as 'recognize_object' | 'counting' | 'shapes' | 'colors' | 'patterns',
+            answers: dbQuestion.answer?.map((answer, index: number) => ({
+              id: answer.id || `answer${index + 1}`,
+              isCorrect: answer.is_correct,
+              blocks: answer.content?.map(block => ({
+                shape: block.shape as 'square' | 'triangle' | 'circle' | 'rectangle' | 'diamond',
+                number: block.number,
+                color: block.color
+              })) || []
+            })) || []
+          }))
+          
+          setQuestionsData(convertedQuestions)
+        } else {
+          console.error('Failed to fetch questions:', result.error)
+          setQuestionsData([])
+        }
+      } catch (error) {
+        console.error('Error loading questions:', error)
+        setQuestionsData([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadQuestions()
+  }, [])
 
   const toggleSidebar = () => {
     setSidebarVisible(!sidebarVisible)
@@ -20,6 +79,8 @@ const Layout: React.FC = () => {
       setSidebarVisible(false)
     }
   }
+
+
 
   return (
     <Container fluid className="p-0 vh-100 d-flex flex-column">
@@ -43,7 +104,11 @@ const Layout: React.FC = () => {
       <Row className="g-0 flex-grow-1">
         {/* Desktop Sidebar */}
         <Col lg={3} className="d-none d-lg-block bg-light border-end">
-          <Sidebar onLessonSelect={handleLessonSelect} />
+          <Sidebar 
+            onLessonSelect={handleLessonSelect} 
+            questionsData={questionsData}
+            loading={loading}
+          />
         </Col>
 
         {/* Main Content */}
@@ -63,7 +128,11 @@ const Layout: React.FC = () => {
           <Offcanvas.Title>Lessons</Offcanvas.Title>
         </Offcanvas.Header>
         <Offcanvas.Body className="p-0">
-          <Sidebar onLessonSelect={handleLessonSelect} />
+          <Sidebar 
+            onLessonSelect={handleLessonSelect}
+            questionsData={questionsData}
+            loading={loading}
+          />
         </Offcanvas.Body>
       </Offcanvas>
     </Container>

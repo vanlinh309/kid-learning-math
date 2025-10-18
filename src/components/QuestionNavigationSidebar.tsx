@@ -2,15 +2,15 @@ import React from 'react'
 import { Card, ListGroup, Badge } from 'react-bootstrap'
 import type { QuestionData } from './Question'
 
-interface QuestionFormInstance {
+interface QuestionInstance {
   id: string
   questionData?: QuestionData | null
   title?: string
 }
 
 interface QuestionNavigationSidebarProps {
-  forms: QuestionFormInstance[]
-  onScrollToQuestion: (formId: string, index: number) => void
+  forms: QuestionInstance[]
+  onScrollToQuestion: (questionId: string) => void
   completedForms: Set<string>
 }
 
@@ -39,14 +39,14 @@ const QuestionNavigationSidebar: React.FC<QuestionNavigationSidebarProps> = ({
         </Card.Header>
         <Card.Body className="p-0">
           <ListGroup variant="flush">
-            {forms.map((form, index) => {
-              const isCompleted = completedForms.has(form.id)
+            {forms.map((question, index) => {
+              const isCompleted = completedForms.has(question.id)
               
               return (
                 <ListGroup.Item
-                  key={form.id}
+                  key={question.id}
                   action
-                  onClick={() => onScrollToQuestion(form.id, index)}
+                  onClick={() => onScrollToQuestion(question.id)}
                   className="d-flex justify-content-between align-items-center py-2"
                   style={{ 
                     cursor: 'pointer',
@@ -62,9 +62,9 @@ const QuestionNavigationSidebar: React.FC<QuestionNavigationSidebarProps> = ({
                         #{index + 1}
                       </small>
                       <small className="fw-semibold">
-                        {form.title ? (
+                        {question.title ? (
                           <span style={{ fontSize: '0.8rem' }}>
-                            {form.title.length > 15 ? `${form.title.substring(0, 15)}...` : form.title}
+                            {question.title.length > 15 ? `${question.title.substring(0, 15)}...` : question.title}
                           </span>
                         ) : (
                           <span className="text-muted">Untitled Question</span>

@@ -1,31 +1,23 @@
 import React, { useState, useEffect } from 'react'
-import { Card, Form, Button, Row, Col, Alert } from 'react-bootstrap'
+import { Card, Form, Button, Row, Col } from 'react-bootstrap'
 import type { QuestionData } from './Question'
-
-// Function to generate UUID
-const generateUUID = (): string => {
-  return 'q_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now().toString(36)
-}
 
 interface QuestionFormProps {
   question?: QuestionData | null
-  onSubmit: (question: QuestionData, formId?: string) => void
-  onCancel?: () => void
   showCardWrapper?: boolean
-  formId?: string
-  onTitleChange?: (title: string, formId?: string) => void
+  questionId?: string
+  onTitleChange?: (title: string, questionId?: string) => void
+  onQuestionDataChange?: (questionData: QuestionData, questionId?: string) => void
 }
 
 const QuestionForm: React.FC<QuestionFormProps> = ({
-  question,
-  onSubmit,
-  onCancel,
   showCardWrapper = true,
-  formId,
-  onTitleChange
+  questionId,
+  onTitleChange,
+  onQuestionDataChange
 }) => {
   const [formData, setFormData] = useState<QuestionData>({
-    id: generateUUID(),
+    id: questionId || '',
     title: '',
     imageUrl: '',
     answers: [
@@ -59,27 +51,24 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
     ]
   })
 
-  const [error, setError] = useState<string>('')
   const [showPreview, setShowPreview] = useState<boolean>(false)
   const [imageLoading, setImageLoading] = useState<boolean>(false)
   const [imageError, setImageError] = useState<boolean>(false)
   const [activeColorPicker, setActiveColorPicker] = useState<string | null>(null)
-  const [showSuccess, setShowSuccess] = useState<boolean>(false)
 
-
-  useEffect(() => {
-    if (question) {
-      setFormData(question)
-      // Show preview if there's an image URL
-      setShowPreview(!!question.imageUrl)
-    } else {
-      // Generate new UUID when creating a new question
-      setFormData(prev => ({
-        ...prev,
-        id: generateUUID()
-      }))
-    }
-  }, [question])
+  // useEffect(() => {
+  //   if (question) {
+  //     setFormData(question)
+  //     // Show preview if there's an image URL
+  //     setShowPreview(!!question.imageUrl)
+  //   } else {
+  //     // Generate new UUID when creating a new question
+  //     setFormData(prev => ({
+  //       ...prev,
+  //       id: generateUUID()
+  //     }))
+  //   }
+  // }, [question])
 
   // Auto-show preview when imageUrl changes
   useEffect(() => {
@@ -90,6 +79,13 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
       setImageError(false)
     }
   }, [formData.imageUrl])
+
+  // Notify parent when form data changes
+  useEffect(() => {
+    if (onQuestionDataChange && questionId) {
+      onQuestionDataChange(formData, questionId)
+    }
+  }, [formData, onQuestionDataChange, questionId])
 
   // Close color picker when clicking outside
   useEffect(() => {
@@ -121,7 +117,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
     
     // Notify parent when title changes
     if (field === 'title' && onTitleChange) {
-      onTitleChange(value, formId)
+      onTitleChange(value, questionId)
     }
   }
 
@@ -164,85 +160,8 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
       }))
     }))
   }
-
-  const validateForm = (): boolean => {
-    if (!formData.title.trim()) {
-      setError('Question title is required')
-      return false
-    }
-    
-    const hasCorrectAnswer = formData.answers.some(answer => answer.isCorrect)
-    if (!hasCorrectAnswer) {
-      setError('At least one answer must be marked as correct')
-      return false
-    }
-
-    const correctAnswers = formData.answers.filter(answer => answer.isCorrect).length
-    if (correctAnswers > 1) {
-      setError('Only one answer can be marked as correct')
-      return false
-    }
-
-    setError('')
-    return true
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (validateForm()) {
-      // Ensure we have a valid ID
-      const questionToSubmit = {
-        ...formData,
-        id: formData.id || generateUUID()
-      }
-      onSubmit(questionToSubmit, formId)
-      
-      // Show success message and reset form for next question (if not editing)
-      if (!question) {
-        setShowSuccess(true)
-        // Hide success message after 3 seconds
-        setTimeout(() => setShowSuccess(false), 3000)
-        
-        setFormData({
-          id: generateUUID(),
-          title: '',
-          imageUrl: '',
-          answers: [
-            {
-              id: 'answer1',
-              isCorrect: false,
-              blocks: [
-                { shape: 'square', number: 1, color: '#007bff' },
-                { shape: 'triangle', number: 1, color: '#28a745' },
-                { shape: 'circle', number: 1, color: '#dc3545' }
-              ]
-            },
-            {
-              id: 'answer2',
-              isCorrect: false,
-              blocks: [
-                { shape: 'square', number: 1, color: '#007bff' },
-                { shape: 'triangle', number: 1, color: '#28a745' },
-                { shape: 'circle', number: 1, color: '#dc3545' }
-              ]
-            },
-            {
-              id: 'answer3',
-              isCorrect: false,
-              blocks: [
-                { shape: 'square', number: 1, color: '#007bff' },
-                { shape: 'triangle', number: 1, color: '#28a745' },
-                { shape: 'circle', number: 1, color: '#dc3545' }
-              ]
-            }
-          ]
-        })
-      }
-    }
-  }
-
+  
   const shapeOptions = ['square', 'triangle', 'circle', 'rectangle', 'diamond'] as const
-
   const renderShapeIcon = (shape: string, size = 16, color = '#007bff') => {
     // Ensure we have a valid color
     const safeColor = color || '#007bff'
@@ -311,15 +230,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
 
   const formContent = (
     <div className={showCardWrapper ? '' : 'p-3'}>
-        {error && <Alert variant="danger">{error}</Alert>}
-        {showSuccess && (
-          <Alert variant="success" className="d-flex align-items-center">
-            <span className="me-2">✅</span>
-            <span>Question added successfully! You can add another question below.</span>
-          </Alert>
-        )}
-        
-        <Form onSubmit={handleSubmit}>
+        <div>
           {/* Question Basic Info */}
           <Form.Group className="mb-3">
             <Form.Label>Image URL</Form.Label>
@@ -416,8 +327,6 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
               </div>
             )}
           </Form.Group>
-
-
 
           <Form.Group className="mb-4">
             <Form.Label>Question Title</Form.Label>
@@ -615,44 +524,9 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
               </Col>
             ))}
           </Row>
-
-          {/* Form Actions */}
-          <div>
-            {!question && (
-              <div className="alert alert-info mb-3">
-                <small>
-                  <strong>💡 Tip:</strong> Click "Add Question" to add this question as a draft. 
-                  Go to "Manage Questions" and click "Save All Questions" to persist all your drafts.
-                </small>
-              </div>
-            )}
-            <div className="d-flex gap-2">
-              <Button type="submit" variant={question ? "success" : "primary"}>
-                {question ? 'Update Question' : '📝 Add Question (Draft)'}
-              </Button>
-              {onCancel && (
-                <Button type="button" variant="secondary" onClick={onCancel}>
-                  Cancel
-                </Button>
-              )}
-            </div>
-          </div>
-        </Form>
+        </div>
     </div>
   )
-
-  if (showCardWrapper) {
-    return (
-      <Card>
-        <Card.Header>
-          <h4>{question ? 'Edit Question' : 'Add New Question'}</h4>
-        </Card.Header>
-        <Card.Body>
-          {formContent}
-        </Card.Body>
-      </Card>
-    )
-  }
 
   return formContent
 }

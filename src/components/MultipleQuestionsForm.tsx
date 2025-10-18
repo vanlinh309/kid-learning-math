@@ -1,66 +1,47 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Button, Container, Row, Col, Card, Alert, Modal } from 'react-bootstrap'
+import { saveQuestionWithAnswers } from '../utils/supabase'
 import QuestionForm from './QuestionForm'
 import QuestionNavigationSidebar from './QuestionNavigationSidebar'
 import type { QuestionData } from './Question'
+import { v4 as uuidv4 } from 'uuid'
 
 // Function to generate UUID
 const generateUUID = (): string => {
-  return 'form_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now().toString(36)
+  return uuidv4()
 }
 
-interface QuestionFormInstance {
+interface QuestionInstance {
   id: string
   questionData?: QuestionData | null
   title?: string
 }
 
-interface MultipleQuestionsFormProps {
-  onAddQuestion: (question: QuestionData) => void
-  onSaveAllQuestions: () => void
-  draftCount: number
-}
-
-const MultipleQuestionsForm: React.FC<MultipleQuestionsFormProps> = ({
-  onAddQuestion,
-  onSaveAllQuestions,
-  draftCount
-}) => {
-  const [forms, setForms] = useState<QuestionFormInstance[]>([
+const MultipleQuestionsForm: React.FC = () => {
+  const navigate = useNavigate()
+  const [questions, setQuestions] = useState<QuestionInstance[]>([
     { id: generateUUID() }
   ])
-  const [completedForms, setCompletedForms] = useState<Set<string>>(new Set())
   const [showSaveModal, setShowSaveModal] = useState<boolean>(false)
-  const formRefs = useRef<Record<string, HTMLDivElement | null>>({})
+  const [isSaving, setIsSaving] = useState<boolean>(false)
+  const [saveError, setSaveError] = useState<string>('')
+  const questionRefs = useRef<Record<string, HTMLDivElement | null>>({})
   
-  const addNewForm = () => {
-    const newForm: QuestionFormInstance = {
+  const addNewQuestion = () => {
+    const newQuestion: QuestionInstance = {
       id: generateUUID()
     }
-    setForms(prev => [...prev, newForm])
+    setQuestions(prev => [...prev, newQuestion])
   }
   
-  const removeForm = (formId: string) => {
-    if (forms.length === 1) return // Keep at least one form
-    setForms(prev => prev.filter(form => form.id !== formId))
-    // Remove from completed forms if it was completed
-    setCompletedForms(prev => {
-      const newSet = new Set(prev)
-      newSet.delete(formId)
-      return newSet
-    })
-  }
-  
-  const handleQuestionSubmit = (question: QuestionData, formId?: string) => {
-    onAddQuestion(question)
-    // Mark this form as completed if formId is provided
-    if (formId) {
-      setCompletedForms(prev => new Set([...prev, formId]))
-    }
+  const removeQuestion = (questionId: string) => {
+    if (questions.length === 1) return // Keep at least one question
+    setQuestions(prev => prev.filter(question => question.id !== questionId))
   }
 
-  const scrollToQuestion = (formId: string, _index: number) => {
-    const element = formRefs.current[formId]
+  const scrollToQuestion = (questionId: string) => {
+    const element = questionRefs.current[questionId]
     if (element) {
       element.scrollIntoView({ 
         behavior: 'smooth', 
@@ -70,34 +51,138 @@ const MultipleQuestionsForm: React.FC<MultipleQuestionsFormProps> = ({
     }
   }
 
-  const handleTitleChange = (title: string, formId?: string) => {
-    if (formId) {
-      setForms(prev => prev.map(form => 
-        form.id === formId ? { ...form, title } : form
+  const handleTitleChange = useCallback((title: string, questionId?: string) => {
+    if (questionId) {
+      setQuestions(prev => prev.map(question => 
+        question.id === questionId ? { ...question, title } : question
       ))
     }
-  }
+  }, [])
+
+  const handleQuestionDataChange = useCallback((questionData: QuestionData, questionId?: string) => {
+    if (questionId) {
+      setQuestions(prev => prev.map(question => 
+        question.id === questionId ? { ...question, questionData } : question
+      ))
+    }
+  }, [])
 
   const handleSaveAllClick = () => {
     setShowSaveModal(true)
+    setSaveError('') // Clear any previous errors
   }
 
-  const handleConfirmSave = () => {
-    onSaveAllQuestions()
-    setShowSaveModal(false)
+  const handleConfirmSave = async () => {
+    // Get questions that have question data
+    const questionsWithData = questions
+      .filter(q => q.questionData)
+      .map(q => q.questionData!)
+
+    if (questionsWithData.length === 0) {
+      setSaveError('No questions to save')
+      return
+    }
+
+    setIsSaving(true)
+    setSaveError('')
+
+    try {
+      // Validate each question before saving
+      const validQuestions: QuestionData[] = []
+      const invalidQuestions: string[] = []
+
+      for (const question of questionsWithData) {
+        const isValid = validateQuestion(question)
+        if (isValid) {
+          validQuestions.push(question)
+        } else {
+          invalidQuestions.push(question.title || question.id)
+        }
+      }
+
+      // If no valid questions, show error
+      if (validQuestions.length === 0) {
+        setSaveError('No valid questions found. Each question must have a title, image URL, and at least one correct answer.')
+        setIsSaving(false)
+        return
+      }
+
+      // If some questions are invalid, show warning
+      if (invalidQuestions.length > 0) {
+        setSaveError(`${invalidQuestions.length} question(s) are invalid and will be skipped: ${invalidQuestions.join(', ')}`)
+      }
+
+      // Save all valid questions to database
+      const savePromises = validQuestions.map(question => 
+        saveQuestionWithAnswers({
+          id: question.id,
+          title: question.title,
+          imageUrl: question.imageUrl,
+          answers: question.answers.map(answer => ({
+            id: answer.id,
+            isCorrect: answer.isCorrect,
+            blocks: answer.blocks.map(block => ({
+              shape: block.shape,
+              number: block.number,
+              color: block.color || '#007bff'
+            }))
+          }))
+        })
+      )
+
+      const results = await Promise.all(savePromises)
+      
+      // Check if all saves were successful
+      const failedSaves = results.filter(result => !result.success)
+      
+      if (failedSaves.length === 0) {
+        // All saves successful - navigate to questions list
+        setShowSaveModal(false)
+        navigate('/admin/questions')
+      } else {
+        // Some saves failed
+        setSaveError(`Failed to save ${failedSaves.length} question(s). Please try again.`)
+      }
+    } catch (error) {
+      console.error('Error saving questions to database:', error)
+      setSaveError('An error occurred while saving questions to the database. Please try again.')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const validateQuestion = (question: QuestionData): boolean => {
+    // Check if title is not empty
+    if (!question.title || question.title.trim() === '') {
+      return false
+    }
+
+    // Check if image URL is not empty
+    if (!question.imageUrl || question.imageUrl.trim() === '') {
+      return false
+    }
+
+    // Check if there's at least one correct answer
+    const hasCorrectAnswer = question.answers.some(answer => answer.isCorrect)
+    if (!hasCorrectAnswer) {
+      return false
+    }
+
+    return true
   }
 
   const handleCancelSave = () => {
     setShowSaveModal(false)
+    setSaveError('')
   }
 
   return (
     <>
       {/* Navigation Sidebar */}
       <QuestionNavigationSidebar
-        forms={forms}
+        forms={questions}
         onScrollToQuestion={scrollToQuestion}
-        completedForms={completedForms}
+        completedForms={new Set(questions.filter(q => q.questionData).map(q => q.id))}
       />
       
       <Container fluid>
@@ -115,10 +200,10 @@ const MultipleQuestionsForm: React.FC<MultipleQuestionsFormProps> = ({
                   <div className="d-flex gap-2">
                     <Button 
                       variant="light" 
-                      onClick={addNewForm}
+                      onClick={addNewQuestion}
                       size="sm"
                     >
-                      ➕ Add Question Form
+                      ➕ Add Question
                     </Button>
 
                   </div>
@@ -129,14 +214,14 @@ const MultipleQuestionsForm: React.FC<MultipleQuestionsFormProps> = ({
         </Col>
       </Row>
 
-      {/* Draft count alert */}
-      {draftCount > 0 && (
+      {/* Questions with data count alert */}
+      {questions.filter(q => q.questionData).length > 0 && (
         <Row className="mb-3">
           <Col>
             <Alert variant="info" className="d-flex align-items-center">
               <span className="me-2">📊</span>
               <span>
-                You have <strong>{draftCount}</strong> draft question{draftCount !== 1 ? 's' : ''} ready to save.
+                You have <strong>{questions.filter(q => q.questionData).length}</strong> question{questions.filter(q => q.questionData).length !== 1 ? 's' : ''} ready to save.
               </span>
             </Alert>
           </Col>
@@ -144,35 +229,35 @@ const MultipleQuestionsForm: React.FC<MultipleQuestionsFormProps> = ({
       )}
 
       {/* Question Forms */}
-      {forms.map((form, index) => (
+      {questions.map((question, index) => (
         <Row 
-          key={form.id} 
+          key={question.id} 
           className="mb-4"
           ref={(el: HTMLDivElement | null) => {
-            formRefs.current[form.id] = el
+            questionRefs.current[question.id] = el
           }}
         >
           <Col>
             <Card className="border-secondary">
               <Card.Header className="bg-light d-flex justify-content-between align-items-center">
                 <h5 className="mb-0">
-                  {form.title ? (
+                  {question.title ? (
                     <>
                       <span className="text-muted me-2">#{index + 1}</span>
-                      {form.title}
+                      {question.title}
                     </>
                   ) : (
                     `Question #${index + 1}`
                   )}
-                  {completedForms.has(form.id) && (
+                  {question.questionData && (
                     <span className="ms-2 text-success">✅</span>
                   )}
                 </h5>
-                {forms.length > 1 && (
+                {questions.length > 1 && (
                   <Button 
                     variant="outline-danger" 
                     size="sm"
-                    onClick={() => removeForm(form.id)}
+                    onClick={() => removeQuestion(question.id)}
                   >
                     ✕ Remove
                   </Button>
@@ -180,11 +265,11 @@ const MultipleQuestionsForm: React.FC<MultipleQuestionsFormProps> = ({
               </Card.Header>
               <Card.Body className="p-0">
                 <QuestionForm
-                  question={form.questionData}
-                  onSubmit={handleQuestionSubmit}
+                  question={question.questionData}
                   showCardWrapper={false}
-                  formId={form.id}
+                  questionId={question.id}
                   onTitleChange={handleTitleChange}
+                  onQuestionDataChange={handleQuestionDataChange}
                 />
               </Card.Body>
             </Card>
@@ -198,15 +283,15 @@ const MultipleQuestionsForm: React.FC<MultipleQuestionsFormProps> = ({
           <div className="d-flex gap-2 justify-content-center">
             <Button 
               variant="outline-primary" 
-              onClick={addNewForm}
+              onClick={addNewQuestion}
             >
-              ➕ Add Another Question Form
+              ➕ Add
             </Button>
             <Button 
-              variant={draftCount > 0 ? "success" : "outline-success"}
+              variant={questions.filter(q => q.questionData).length > 0 ? "success" : "outline-success"}
               onClick={handleSaveAllClick}
             >
-              💾 Save All Questions {draftCount > 0 ? `(${draftCount})` : '(0)'}
+              💾 Save {questions.filter(q => q.questionData).length > 0 ? `(${questions.filter(q => q.questionData).length})` : '(0)'}
             </Button>
           </div>
         </Col>
@@ -220,27 +305,33 @@ const MultipleQuestionsForm: React.FC<MultipleQuestionsFormProps> = ({
       </Modal.Header>
       <Modal.Body>
         <div className="text-center">
-          {draftCount > 0 ? (
+          {saveError && (
+            <div className="alert alert-warning mb-3">
+              <small><strong>Warning:</strong> {saveError}</small>
+            </div>
+          )}
+          
+          {questions.length > 0 ? (
             <>
               <h5 className="mb-3">Are you sure you want to save all questions?</h5>
               <p className="text-muted mb-3">
-                You have <strong>{draftCount}</strong> draft question{draftCount !== 1 ? 's' : ''} ready to be saved to the database.
+                You have <strong>{questions.length}</strong> question{questions.length !== 1 ? 's' : ''} ready to be saved to the database.
               </p>
               <div className="alert alert-info">
                 <small>
-                  <strong>Note:</strong> Once saved, these questions will be permanently stored and available for use in the learning application.
+                  <strong>Note:</strong> Each question must have a title, image URL, and at least one correct answer to be saved. Invalid questions will be skipped.
                 </small>
               </div>
             </>
           ) : (
             <>
-              <h5 className="mb-3">No draft questions to save</h5>
+              <h5 className="mb-3">No questions to save</h5>
               <p className="text-muted mb-3">
-                You currently have no draft questions. Please create and submit some questions first.
+                You currently have no submitted questions. Please create and submit some questions first.
               </p>
               <div className="alert alert-warning">
                 <small>
-                  <strong>Tip:</strong> Fill out the question forms and click "📝 Add Question (Draft)" to create draft questions that can be saved.
+                  <strong>Tip:</strong> Fill out the question forms and click "📝 Add Question (Draft)" to create questions that can be saved.
                 </small>
               </div>
             </>
@@ -248,12 +339,19 @@ const MultipleQuestionsForm: React.FC<MultipleQuestionsFormProps> = ({
         </div>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={handleCancelSave}>
-          {draftCount > 0 ? 'Cancel' : 'Close'}
+        <Button variant="secondary" onClick={handleCancelSave} disabled={isSaving}>
+          {questions.length > 0 ? 'Cancel' : 'Close'}
         </Button>
-        {draftCount > 0 && (
-          <Button variant="success" onClick={handleConfirmSave}>
-            💾 Yes, Save All Questions
+        {questions.length > 0 && (
+          <Button variant="success" onClick={handleConfirmSave} disabled={isSaving}>
+            {isSaving ? (
+              <>
+                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                Saving...
+              </>
+            ) : (
+              '💾 Yes, Save All Questions'
+            )}
           </Button>
         )}
       </Modal.Footer>
