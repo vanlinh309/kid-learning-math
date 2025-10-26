@@ -13,7 +13,7 @@ type AdminSection = 'home' | 'object-recognition-list' | 'object-recognition-new
 const AdminLayout: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  const [editingQuestion, setEditingQuestion] = useState<QuestionData | null>(null)
+  const [editingQuestion] = useState<QuestionData | null>(null)
 
   const getActiveSectionFromPath = (pathname: string): AdminSection => {
     if (pathname === '/admin/object-recognition') {
