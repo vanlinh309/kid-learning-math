@@ -40,6 +40,7 @@ export async function saveQuestionWithAnswers(questionData: {
   id: string;
   title: string;
   imageUrl?: string;
+  category?: string;
   answers: Array<{
     id: string;
     isCorrect: boolean;
@@ -48,6 +49,7 @@ export async function saveQuestionWithAnswers(questionData: {
       number: number;
       color: string;
     }>;
+    imageUrl?: string; // For counting questions
   }>;
 }) {
   try {
@@ -58,7 +60,7 @@ export async function saveQuestionWithAnswers(questionData: {
         id: questionData.id,
         title: questionData.title,
         image_url: questionData.imageUrl || null,
-        category: 'recognize_object'
+        category: questionData.category || 'recognize_object'
       })
       .select()
       .single();
@@ -68,13 +70,31 @@ export async function saveQuestionWithAnswers(questionData: {
     }
 
     // Then, save all the answers
-    const answersToInsert = questionData.answers.map((answer, index) => ({
-      question_id: questionData.id,
-      title: `Answer ${index + 1}`,
-      content: answer.blocks,
-      type: 'single_choice',
-      is_correct: answer.isCorrect
-    }));
+    // Different handling for counting vs recognize_object category
+    const answersToInsert = questionData.answers.map((answer, index) => {
+      if (questionData.category === 'counting') {
+        // For counting questions: store as JSON with image_url and correct_number
+        return {
+          question_id: questionData.id,
+          title: `Answer ${index + 1}`,
+          content: {
+            image_url: answer.imageUrl || '',
+            correct_number: answer.blocks[0]?.number || 0
+          },
+          type: 'free_choice',
+          is_correct: true // Always true for counting questions
+        };
+      } else {
+        // For recognize_object questions: store blocks array
+        return {
+          question_id: questionData.id,
+          title: `Answer ${index + 1}`,
+          content: answer.blocks,
+          type: 'single_choice',
+          is_correct: answer.isCorrect
+        };
+      }
+    });
 
     const { data: answersResult, error: answersError } = await supabase
       .from('answer')
@@ -298,15 +318,22 @@ export async function fetchAnswersByQuestionId(questionId: string) {
 }
 
 // Function to fetch all questions with their answers
-export async function fetchQuestionsWithAnswers() {
+export async function fetchQuestionsWithAnswers(category?: string) {
   try {
-    const { data: questions, error: questionsError } = await supabase
+    let query = supabase
       .from('question')
       .select(`
         *,
         answer (*)
       `)
       .order('created_at', { ascending: false });
+
+    // Filter by category if provided
+    if (category) {
+      query = query.eq('category', category);
+    }
+
+    const { data: questions, error: questionsError } = await query;
 
     if (questionsError) {
       throw questionsError;

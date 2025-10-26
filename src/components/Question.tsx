@@ -11,6 +11,7 @@ export interface Answer {
     number: number
     color?: string
   }[]
+  imageUrl?: string // For counting questions
 }
 
 export interface QuestionData {

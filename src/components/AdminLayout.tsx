@@ -3,11 +3,12 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { Container, Row, Col, Navbar, Button } from 'react-bootstrap'
 import QuestionForm from './QuestionForm'
 import QuestionList from './QuestionList'
-import MultipleQuestionsForm from './MultipleQuestionsForm'
+import CreateQuestionsForm from './CreateQuestionsForm'
+import AdminSidebar from './AdminSidebar'
 import type { QuestionData } from './Question'
 import './AdminLayout.css'
 
-type AdminSection = 'home' | 'questions-list' | 'questions-new' | 'questions-edit'
+type AdminSection = 'home' | 'object-recognition-list' | 'object-recognition-new' | 'counting-list' | 'counting-new' | 'questions-edit'
 
 const AdminLayout: React.FC = () => {
   const navigate = useNavigate()
@@ -15,10 +16,18 @@ const AdminLayout: React.FC = () => {
   const [editingQuestion, setEditingQuestion] = useState<QuestionData | null>(null)
 
   const getActiveSectionFromPath = (pathname: string): AdminSection => {
-    if (pathname === '/admin/questions') {
-      return 'questions-list'
+    if (pathname === '/admin/object-recognition') {
+      return 'object-recognition-list'
+    } else if (pathname === '/admin/object-recognition/new') {
+      return 'object-recognition-new'
+    } else if (pathname === '/admin/counting') {
+      return 'counting-list'
+    } else if (pathname === '/admin/counting/new') {
+      return 'counting-new'
+    } else if (pathname === '/admin/questions') {
+      return 'object-recognition-list' // Legacy path
     } else if (pathname === '/admin/questions/new') {
-      return 'questions-new'
+      return 'object-recognition-new' // Legacy path
     } else if (pathname === '/admin/questions/edit') {
       return 'questions-edit'
     } else if (pathname === '/admin') {
@@ -70,7 +79,7 @@ const AdminLayout: React.FC = () => {
                 <div className="quick-actions">
                   <Button 
                     variant="primary" 
-                    onClick={() => navigate('/admin/questions/new')}
+                    onClick={() => navigate('/admin/object-recognition/new')}
                     className="me-3"
                   >
                     <i className="fas fa-plus-circle me-2"></i>
@@ -78,7 +87,7 @@ const AdminLayout: React.FC = () => {
                   </Button>
                   <Button 
                     variant="outline-primary" 
-                    onClick={() => navigate('/admin/questions')}
+                    onClick={() => navigate('/admin/object-recognition')}
                   >
                     <i className="fas fa-list-ul me-2"></i>
                     View All Questions
@@ -88,18 +97,34 @@ const AdminLayout: React.FC = () => {
             </div>
           </div>
         )
-      case 'questions-new':
+      case 'object-recognition-new':
         if (editingQuestion) {
-          // Show single QuestionForm for editing
           return (
             <QuestionForm
               question={editingQuestion}
             />
           )
         } else {
-          // Show MultipleQuestionsForm for adding new questions
           return (
-            <MultipleQuestionsForm />
+            <CreateQuestionsForm 
+              category="recognize_object"
+              redirectPath="/admin/object-recognition"
+            />
+          )
+        }
+      case 'counting-new':
+        if (editingQuestion) {
+          return (
+            <QuestionForm
+              question={editingQuestion}
+            />
+          )
+        } else {
+          return (
+            <CreateQuestionsForm 
+              category="counting"
+              redirectPath="/admin/counting"
+            />
           )
         }
       case 'questions-edit':
@@ -108,7 +133,20 @@ const AdminLayout: React.FC = () => {
             question={editingQuestion}
           />
         )
-      case 'questions-list':
+      case 'object-recognition-list':
+        return (
+          <QuestionList
+            onEdit={handleEditClick}
+            category="recognize_object"
+          />
+        )
+      case 'counting-list':
+        return (
+          <QuestionList
+            onEdit={handleEditClick}
+            category="counting"
+          />
+        )
       default:
         return (
           <QuestionList
@@ -129,63 +167,9 @@ const AdminLayout: React.FC = () => {
       <Container fluid>
         <Row className="min-vh-100">
           <Col md={3} className="mb-4 p-0">
-            <div className="admin-sidebar">
-              {/* Home Section */}
-              <div className="sidebar-menu mb-4">
-                <div 
-                  className={`sidebar-menu-item ${currentActiveSection === 'home' ? 'active' : ''}`}
-                  onClick={() => navigate('/admin')}
-                >
-                  <div className="sidebar-menu-icon">
-                    <i className="fas fa-home"></i>
-                  </div>
-                  <span className="sidebar-menu-text">Home</span>
-                </div>
-              </div>
-
-              {/* Main Section Header */}
-              <div className="sidebar-section-header">
-                QUESTIONS
-              </div>
-              
-              {/* Menu Items */}
-              <div className="sidebar-menu">
-                <div 
-                  className={`sidebar-menu-item ${currentActiveSection === 'questions-list' ? 'active' : ''}`}
-                  onClick={() => navigate('/admin/questions')}
-                >
-                  <div className="sidebar-menu-icon">
-                    <i className="fas fa-list-ul"></i>
-                  </div>
-                  <span className="sidebar-menu-text">List</span>
-                </div>
-                
-                <div 
-                  className={`sidebar-menu-item ${currentActiveSection === 'questions-new' ? 'active' : ''}`}
-                  onClick={() => {
-                    navigate('/admin/questions/new')
-                    setEditingQuestion(null)
-                  }}
-                >
-                  <div className="sidebar-menu-icon">
-                    <i className="fas fa-plus-circle"></i>
-                  </div>
-                  <span className="sidebar-menu-text">New</span>
-                </div>
-                
-                {editingQuestion && (
-                  <div 
-                    className={`sidebar-menu-item ${currentActiveSection === 'questions-edit' ? 'active' : ''}`}
-                    onClick={() => navigate('/admin/edit')}
-                  >
-                    <div className="sidebar-menu-icon">
-                      <i className="fas fa-edit"></i>
-                    </div>
-                    <span className="sidebar-menu-text">Edit</span>
-                  </div>
-                )}
-              </div>
-            </div>
+            <AdminSidebar 
+              currentActiveSection={currentActiveSection}
+            />
           </Col>
 
           <Col md={9}>

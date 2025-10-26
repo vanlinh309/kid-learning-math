@@ -1,24 +1,27 @@
 import React, { useState, useEffect } from 'react'
-import { Button, Container, Row, Col, Offcanvas } from 'react-bootstrap'
-import { List } from 'react-bootstrap-icons'
+import { useParams, useNavigate } from 'react-router-dom'
+import { Button, Row, Col, Offcanvas } from 'react-bootstrap'
+import { List, House } from 'react-bootstrap-icons'
 import Sidebar from './Sidebar'
 import MainContent from './MainContent'
 import { fetchQuestionsWithAnswers } from '../utils/supabase'
 import type { LessonItem } from '../data/lessons'
 import type { QuestionData } from './Question'
 
-const Layout: React.FC = () => {
+const LearningPage: React.FC = () => {
+  const { category } = useParams<{ category: string }>()
+  const navigate = useNavigate()
   const [sidebarVisible, setSidebarVisible] = useState(false)
   const [selectedLesson, setSelectedLesson] = useState<LessonItem | undefined>()
   const [questionsData, setQuestionsData] = useState<QuestionData[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Fetch questions data on component mount
+  // Fetch questions data filtered by category
   useEffect(() => {
     const loadQuestions = async () => {
       try {
         setLoading(true)
-        const result = await fetchQuestionsWithAnswers()
+        const result = await fetchQuestionsWithAnswers(category)
         
         if (result.success && result.questions) {
           // Convert database format to QuestionData format
@@ -78,7 +81,7 @@ const Layout: React.FC = () => {
     }
 
     loadQuestions()
-  }, [])
+  }, [category])
 
   const toggleSidebar = () => {
     setSidebarVisible(!sidebarVisible)
@@ -92,63 +95,72 @@ const Layout: React.FC = () => {
     }
   }
 
-
-
   return (
-    <Container fluid className="p-0 vh-100 d-flex flex-column">
-      {/* Header with Toggle Button */}
-      <Row className="g-0 bg-primary text-white py-2 px-3">
-        <Col className="d-flex align-items-center">
-          <Button
-            variant="outline-light"
-            size="sm"
+    <div className="vh-100 d-flex flex-column">
+      {/* Top Navigation Bar */}
+      <div className="bg-white border-bottom p-2 d-flex align-items-center justify-content-between">
+        <div className="d-flex align-items-center gap-2">
+          <Button 
+            variant="outline-primary" 
+            size="sm" 
+            className="d-lg-none"
             onClick={toggleSidebar}
-            aria-label="Toggle sidebar"
-            className="me-3"
           >
-            <List size={18} />
+            <List size={20} />
           </Button>
-          <h5 className="mb-0">Kid Learning Platform</h5>
-        </Col>
-      </Row>
+          <h5 className="mb-0 text-primary">
+            {category === 'counting' ? '🔢 Counting Lessons' : '👁️ Object Recognition'}
+          </h5>
+        </div>
+        <Button 
+          variant="outline-secondary" 
+          size="sm"
+          onClick={() => navigate('/')}
+        >
+          <House size={16} className="me-1" />
+          Home
+        </Button>
+      </div>
 
-      {/* Main Layout */}
-      <Row className="g-0 flex-grow-1">
-        {/* Desktop Sidebar */}
-        <Col lg={3} className="d-none d-lg-block bg-light border-end">
-          <Sidebar 
-            onLessonSelect={handleLessonSelect} 
-            questionsData={questionsData}
-            loading={loading}
-          />
-        </Col>
+      {/* Main Content Area */}
+      <div className="flex-grow-1 d-flex overflow-hidden">
+        <Row className="g-0 w-100 h-100">
+          {/* Sidebar - Desktop */}
+          <Col lg={3} className="d-none d-lg-block border-end bg-light h-100">
+            <Sidebar 
+              onLessonSelect={handleLessonSelect}
+              questionsData={questionsData}
+              loading={loading}
+            />
+          </Col>
 
-        {/* Main Content */}
-        <Col lg={9} xs={12} className="d-flex flex-column">
-          <MainContent selectedLesson={selectedLesson} />
-        </Col>
-      </Row>
+          {/* Sidebar - Mobile (Offcanvas) */}
+          <Offcanvas 
+            show={sidebarVisible} 
+            onHide={toggleSidebar}
+            placement="start"
+            className="w-75"
+          >
+            <Offcanvas.Header closeButton>
+              <Offcanvas.Title>Lessons</Offcanvas.Title>
+            </Offcanvas.Header>
+            <Offcanvas.Body className="p-0">
+              <Sidebar 
+                onLessonSelect={handleLessonSelect}
+                questionsData={questionsData}
+                loading={loading}
+              />
+            </Offcanvas.Body>
+          </Offcanvas>
 
-      {/* Mobile Sidebar (Offcanvas) */}
-      <Offcanvas 
-        show={sidebarVisible} 
-        onHide={toggleSidebar} 
-        className="d-lg-none"
-        placement="start"
-      >
-        <Offcanvas.Header closeButton className="bg-primary text-white">
-          <Offcanvas.Title>Lessons</Offcanvas.Title>
-        </Offcanvas.Header>
-        <Offcanvas.Body className="p-0">
-          <Sidebar 
-            onLessonSelect={handleLessonSelect}
-            questionsData={questionsData}
-            loading={loading}
-          />
-        </Offcanvas.Body>
-      </Offcanvas>
-    </Container>
+          {/* Main Content */}
+          <Col lg={9} className="h-100 overflow-auto">
+            <MainContent selectedLesson={selectedLesson} />
+          </Col>
+        </Row>
+      </div>
+    </div>
   )
 }
 
-export default Layout
+export default LearningPage

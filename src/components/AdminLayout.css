@@ -24,6 +24,24 @@
   padding-left: 12px;
   border-bottom: 1px solid #ede8e0;
   padding-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border-radius: 8px;
+  user-select: none;
+}
+
+.sidebar-section-header:hover {
+  background-color: #f5f2ed;
+  color: #6d5d47;
+}
+
+.sidebar-section-header i {
+  transition: transform 0.3s ease-in-out;
+  font-size: 12px;
 }
 
 /* Menu Container */

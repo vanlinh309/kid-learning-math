@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { Container, Card } from 'react-bootstrap'
+import { useNavigate } from 'react-router-dom'
 import Question from './Question'
+import CountingQuestion from './CountingQuestion'
 import type { LessonItem } from '../data/lessons'
 
 interface MainContentProps {
@@ -8,6 +10,7 @@ interface MainContentProps {
 }
 
 const MainContent: React.FC<MainContentProps> = ({ selectedLesson }) => {
+  const navigate = useNavigate()
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [selectedAnswerId, setSelectedAnswerId] = useState<string>()
 
@@ -39,11 +42,17 @@ const MainContent: React.FC<MainContentProps> = ({ selectedLesson }) => {
             {/* Lesson Content */}
             <div className="flex-grow-1">
               {selectedLesson.questions.length > 0 ? (
-                <Question 
-                  question={selectedLesson.questions[currentQuestionIndex]}
-                  onAnswerSelect={handleAnswerSelect}
-                  selectedAnswerId={selectedAnswerId}
-                />
+                selectedLesson.questions[currentQuestionIndex].category === 'counting' ? (
+                  <CountingQuestion 
+                    question={selectedLesson.questions[currentQuestionIndex]}
+                  />
+                ) : (
+                  <Question 
+                    question={selectedLesson.questions[currentQuestionIndex]}
+                    onAnswerSelect={handleAnswerSelect}
+                    selectedAnswerId={selectedAnswerId}
+                  />
+                )
               ) : (
                 <Card className="h-100">
                   <Card.Body className="d-flex flex-column justify-content-center align-items-center">
@@ -77,15 +86,27 @@ const MainContent: React.FC<MainContentProps> = ({ selectedLesson }) => {
                 </p>
                 <div className="mt-4">
                   <div className="d-flex justify-content-center gap-3">
-                    <div className="text-center">
+                    <div 
+                      className="text-center"
+                      style={{ cursor: 'pointer', transition: 'transform 0.2s ease' }}
+                      onClick={() => navigate('/learn/recognize_object')}
+                      onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                      onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                    >
                       <div className="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style={{ width: '60px', height: '60px' }}>
-                        <span className="fs-4">�</span>
+                        <span className="fs-4">👁️</span>
                       </div>
                       <p className="mt-2 mb-0 small">Recognizing Objects</p>
                     </div>
-                    <div className="text-center">
+                    <div 
+                      className="text-center"
+                      style={{ cursor: 'pointer', transition: 'transform 0.2s ease' }}
+                      onClick={() => navigate('/learn/counting')}
+                      onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                      onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                    >
                       <div className="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center" style={{ width: '60px', height: '60px' }}>
-                        <span className="fs-4">�</span>
+                        <span className="fs-4">🔢</span>
                       </div>
                       <p className="mt-2 mb-0 small">Counting</p>
                     </div>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Button, Container, Row, Col, Card, Alert, Modal } from 'react-bootstrap'
 import { saveQuestionWithAnswers } from '../utils/supabase'
 import QuestionForm from './QuestionForm'
+import CountingQuestionForm from './CountingQuestionForm'
 import QuestionNavigationSidebar from './QuestionNavigationSidebar'
 import type { QuestionData } from './Question'
 import { v4 as uuidv4 } from 'uuid'
@@ -18,7 +19,18 @@ interface QuestionInstance {
   title?: string
 }
 
-const MultipleQuestionsForm: React.FC = () => {
+// Define question category types
+export type QuestionCategory = 'recognize_object' | 'counting'
+
+interface MultipleQuestionsFormProps {
+  category?: QuestionCategory
+  redirectPath?: string
+}
+
+const MultipleQuestionsForm: React.FC<MultipleQuestionsFormProps> = ({ 
+  category = 'recognize_object',
+  redirectPath
+}) => {
   const navigate = useNavigate()
   const [questions, setQuestions] = useState<QuestionInstance[]>([
     { id: generateUUID() }
@@ -118,6 +130,7 @@ const MultipleQuestionsForm: React.FC = () => {
           id: question.id,
           title: question.title,
           imageUrl: question.imageUrl,
+          category: category, // Use the category prop
           answers: question.answers.map(answer => ({
             id: answer.id,
             isCorrect: answer.isCorrect,
@@ -125,7 +138,8 @@ const MultipleQuestionsForm: React.FC = () => {
               shape: block.shape,
               number: block.number,
               color: block.color || '#007bff'
-            }))
+            })),
+            imageUrl: answer.imageUrl // Include imageUrl for counting questions
           }))
         })
       )
@@ -136,9 +150,10 @@ const MultipleQuestionsForm: React.FC = () => {
       const failedSaves = results.filter(result => !result.success)
       
       if (failedSaves.length === 0) {
-        // All saves successful - navigate to questions list
+        // All saves successful - navigate based on category or redirectPath
         setShowSaveModal(false)
-        navigate('/admin/questions')
+        const defaultPath = category === 'counting' ? '/admin/counting' : '/admin/object-recognition'
+        navigate(redirectPath || defaultPath)
       } else {
         // Some saves failed
         setSaveError(`Failed to save ${failedSaves.length} question(s). Please try again.`)
@@ -162,7 +177,18 @@ const MultipleQuestionsForm: React.FC = () => {
       return false
     }
 
-    // Check if there's at least one correct answer
+    // For counting questions, validate that answers have imageUrl and count
+    if (category === 'counting') {
+      const hasValidAnswers = question.answers.some(answer => 
+        answer.imageUrl && 
+        answer.imageUrl.trim() !== '' && 
+        answer.blocks.length > 0 && 
+        answer.blocks[0].number > 0
+      )
+      return hasValidAnswers
+    }
+
+    // For other question types, check if there's at least one correct answer
     const hasCorrectAnswer = question.answers.some(answer => answer.isCorrect)
     if (!hasCorrectAnswer) {
       return false
@@ -174,6 +200,30 @@ const MultipleQuestionsForm: React.FC = () => {
   const handleCancelSave = () => {
     setShowSaveModal(false)
     setSaveError('')
+  }
+
+  // Get category display name
+  const getCategoryDisplayName = () => {
+    switch (category) {
+      case 'counting':
+        return 'Counting'
+      case 'recognize_object':
+        return 'Object Recognition'
+      default:
+        return 'Questions'
+    }
+  }
+
+  // Get category icon
+  const getCategoryIcon = () => {
+    switch (category) {
+      case 'counting':
+        return '🔢'
+      case 'recognize_object':
+        return '👁️'
+      default:
+        return '📝'
+    }
   }
 
   return (
@@ -193,8 +243,8 @@ const MultipleQuestionsForm: React.FC = () => {
             <Card.Header className="bg-primary text-white">
               <Row className="align-items-center">
                 <Col>
-                  <h4 className="mb-0">📝 Create Questions</h4>
-                  <small>Add multiple questions simultaneously</small>
+                  <h4 className="mb-0">{getCategoryIcon()} Create {getCategoryDisplayName()} Questions</h4>
+                  <small>Add multiple {getCategoryDisplayName().toLowerCase()} questions simultaneously</small>
                 </Col>
                 <Col xs="auto">
                   <div className="d-flex gap-2">
@@ -264,13 +314,24 @@ const MultipleQuestionsForm: React.FC = () => {
                 )}
               </Card.Header>
               <Card.Body className="p-0">
-                <QuestionForm
-                  question={question.questionData}
-                  showCardWrapper={false}
-                  questionId={question.id}
-                  onTitleChange={handleTitleChange}
-                  onQuestionDataChange={handleQuestionDataChange}
-                />
+                {/* Render different form based on category */}
+                {category === 'counting' ? (
+                  <CountingQuestionForm
+                    question={question.questionData}
+                    showCardWrapper={false}
+                    questionId={question.id}
+                    onTitleChange={handleTitleChange}
+                    onQuestionDataChange={handleQuestionDataChange}
+                  />
+                ) : (
+                  <QuestionForm
+                    question={question.questionData}
+                    showCardWrapper={false}
+                    questionId={question.id}
+                    onTitleChange={handleTitleChange}
+                    onQuestionDataChange={handleQuestionDataChange}
+                  />
+                )}
               </Card.Body>
             </Card>
           </Col>

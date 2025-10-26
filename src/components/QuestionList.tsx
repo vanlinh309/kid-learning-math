@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Card, Table, Button, Spinner, Alert, OverlayTrigger, Tooltip, Modal } from 'react-bootstrap'
 import { fetchQuestions, deleteQuestionWithAnswers, fetchQuestionWithAnswersById, type QuestionDB } from '../utils/supabase'
 import QuestionForm from './QuestionForm'
@@ -23,11 +23,13 @@ interface DatabaseAnswer {
 interface QuestionListProps {
   onEdit: (questionId: string) => void
   onRefresh?: () => void
+  category?: string // Add category filter
 }
 
 const QuestionList: React.FC<QuestionListProps> = ({
   onEdit,
-  onRefresh
+  onRefresh,
+  category
 }) => {
   const [questions, setQuestions] = useState<QuestionDB[]>([])
   const [loading, setLoading] = useState<boolean>(true)
@@ -36,14 +38,19 @@ const QuestionList: React.FC<QuestionListProps> = ({
   const [selectedQuestion, setSelectedQuestion] = useState<QuestionData | null>(null)
   const [modalLoading, setModalLoading] = useState<boolean>(false)
 
-  const loadQuestions = async () => {
+  const loadQuestions = useCallback(async () => {
     setLoading(true)
     setError('')
     
     try {
       const result = await fetchQuestions()
       if (result.success) {
-        setQuestions(result.questions || [])
+        let allQuestions = result.questions || []
+        // Filter by category if provided
+        if (category) {
+          allQuestions = allQuestions.filter(q => q.category === category)
+        }
+        setQuestions(allQuestions)
       } else {
         setError(result.error || 'Failed to load questions')
       }
@@ -53,11 +60,11 @@ const QuestionList: React.FC<QuestionListProps> = ({
     } finally {
       setLoading(false)
     }
-  }
+  }, [category])
 
   useEffect(() => {
     loadQuestions()
-  }, [])
+  }, [loadQuestions])
 
   const handleDelete = async (questionId: string) => {
     if (!window.confirm('Are you sure you want to delete this question?')) {
