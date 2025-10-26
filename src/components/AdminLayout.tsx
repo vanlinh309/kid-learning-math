@@ -166,13 +166,13 @@ const AdminLayout: React.FC = () => {
 
       <Container fluid>
         <Row className="min-vh-100">
-          <Col md={3} className="mb-4 p-0">
+          <Col md={2} className="mb-4 p-0">
             <AdminSidebar 
               currentActiveSection={currentActiveSection}
             />
           </Col>
 
-          <Col md={9}>
+          <Col md={10}>
             {renderContent()}
           </Col>
         </Row>

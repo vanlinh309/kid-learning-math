@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button, Row, Col, Offcanvas } from 'react-bootstrap'
-import { List, House } from 'react-bootstrap-icons'
+import { List, House, ChevronLeft, ChevronRight } from 'react-bootstrap-icons'
 import Sidebar from './Sidebar'
 import MainContent from './MainContent'
 import { fetchQuestionsWithAnswers } from '../utils/supabase'
@@ -89,10 +89,61 @@ const LearningPage: React.FC = () => {
 
   const handleLessonSelect = (lesson: LessonItem) => {
     setSelectedLesson(lesson)
-    // Close sidebar on mobile when lesson is selected
-    if (window.innerWidth < 992) {
+    // Close sidebar on mobile/tablet when lesson is selected
+    if (window.innerWidth < 1200) {
       setSidebarVisible(false)
     }
+  }
+
+  // Navigation functions
+  const getCurrentLessonIndex = () => {
+    if (!selectedLesson) return -1
+    // Create lessons from questionsData
+    const lessons: LessonItem[] = questionsData.map(question => ({
+      id: question.id,
+      title: question.title,
+      questions: [question]
+    }))
+    return lessons.findIndex(lesson => lesson.id === selectedLesson.id)
+  }
+
+  const handleNextLesson = () => {
+    const lessons: LessonItem[] = questionsData.map(question => ({
+      id: question.id,
+      title: question.title,
+      questions: [question]
+    }))
+    const currentIndex = getCurrentLessonIndex()
+    if (currentIndex >= 0 && currentIndex < lessons.length - 1) {
+      setSelectedLesson(lessons[currentIndex + 1])
+    }
+  }
+
+  const handlePreviousLesson = () => {
+    const lessons: LessonItem[] = questionsData.map(question => ({
+      id: question.id,
+      title: question.title,
+      questions: [question]
+    }))
+    const currentIndex = getCurrentLessonIndex()
+    if (currentIndex > 0) {
+      setSelectedLesson(lessons[currentIndex - 1])
+    }
+  }
+
+  const canGoNext = () => {
+    const lessons: LessonItem[] = questionsData.map(question => ({
+      id: question.id,
+      title: question.title,
+      questions: [question]
+    }))
+    const currentIndex = getCurrentLessonIndex()
+    return currentIndex >= 0 && currentIndex < lessons.length - 1
+  }
+
+  const canGoPrevious = () => {
+    const currentIndex = getCurrentLessonIndex()
+    return currentIndex > 0
   }
 
   return (
@@ -123,9 +174,9 @@ const LearningPage: React.FC = () => {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-grow-1 d-flex overflow-hidden">
+      <div className="flex-grow-1 d-flex overflow-hidden position-relative">
         <Row className="g-0 w-100 h-100">
-          {/* Sidebar - Desktop */}
+          {/* Sidebar - Desktop only (1200px+) */}
           <Col lg={3} className="d-none d-lg-block border-end bg-light h-100">
             <Sidebar 
               onLessonSelect={handleLessonSelect}
@@ -134,7 +185,7 @@ const LearningPage: React.FC = () => {
             />
           </Col>
 
-          {/* Sidebar - Mobile (Offcanvas) */}
+          {/* Sidebar - Mobile/Tablet (Offcanvas) */}
           <Offcanvas 
             show={sidebarVisible} 
             onHide={toggleSidebar}
@@ -158,6 +209,46 @@ const LearningPage: React.FC = () => {
             <MainContent selectedLesson={selectedLesson} />
           </Col>
         </Row>
+
+        {/* Navigation Buttons for Tablet (768px - 1199px) */}
+        {selectedLesson && (
+          <>
+            <Button
+              variant="light"
+              className="d-none d-md-flex d-lg-none position-fixed align-items-center justify-content-center border shadow"
+              onClick={handlePreviousLesson}
+              disabled={!canGoPrevious()}
+              style={{
+                left: '10px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: '50px',
+                height: '50px',
+                borderRadius: '50%',
+                zIndex: 1000
+              }}
+            >
+              <ChevronLeft size={28} />
+            </Button>
+            <Button
+              variant="light"
+              className="d-none d-md-flex d-lg-none position-fixed align-items-center justify-content-center border shadow"
+              onClick={handleNextLesson}
+              disabled={!canGoNext()}
+              style={{
+                right: '10px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: '50px',
+                height: '50px',
+                borderRadius: '50%',
+                zIndex: 1000
+              }}
+            >
+              <ChevronRight size={28} />
+            </Button>
+          </>
+        )}
       </div>
     </div>
   )

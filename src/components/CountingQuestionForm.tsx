@@ -233,10 +233,10 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
                           src={formData.imageUrl.includes('/preview') ? formData.imageUrl : formData.imageUrl.replace('/view?usp=sharing', '/preview')}
                           className="rounded border"
                           style={{ 
-                            maxWidth: '400px', 
-                            maxHeight: '300px', 
+                            maxWidth: '600px', 
+                            maxHeight: '450px', 
                             width: '100%',
-                            height: '250px',
+                            height: '400px',
                             border: 'none'
                           }}
                           title="Image preview"
@@ -252,7 +252,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
                           src={formData.imageUrl} 
                           alt="Image preview"
                           className="img-fluid rounded"
-                          style={{ maxWidth: '400px', maxHeight: '300px', objectFit: 'contain'}}
+                          style={{ maxWidth: '600px', maxHeight: '450px', objectFit: 'contain'}}
                           onLoad={() => {
                             setImageLoading(false)
                             setImageError(false)

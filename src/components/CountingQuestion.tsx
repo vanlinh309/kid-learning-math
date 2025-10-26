@@ -89,8 +89,8 @@ const CountingQuestion: React.FC<CountingQuestionProps> = ({
 
   return (
     <Card className="h-100 shadow-sm">
-      <Card.Header className="bg-success text-white">
-        <h4 className="mb-0">🔢 {question.title}</h4>
+      <Card.Header className="bg-success text-white py-2">
+        <h5 className="mb-0">🔢 {question.title}</h5>
       </Card.Header>
       <Card.Body className="d-flex flex-column">
         {/* Main Question Image */}
@@ -100,15 +100,10 @@ const CountingQuestion: React.FC<CountingQuestionProps> = ({
               src={question.imageUrl} 
               alt="Question" 
               className="img-fluid rounded shadow-sm"
-              style={{ maxHeight: '300px', objectFit: 'contain' }}
+              style={{ maxHeight: '500px', objectFit: 'contain', maxWidth: '100%' }}
             />
           </div>
         )}
-
-        {/* Instructions */}
-        <div className="alert alert-info mb-4">
-          <strong>📝 Instructions:</strong> Count the objects in each image and enter the number below it!
-        </div>
 
         {/* Answer Options (Images with textboxes) */}
         <div className="mb-4">
@@ -146,21 +141,21 @@ const CountingQuestion: React.FC<CountingQuestionProps> = ({
                       </div>
                     )}
                     
-                    <Card.Body className="d-flex flex-column align-items-center p-3">
+                    <Card.Body className="d-flex flex-column align-items-center p-2">
                       {/* Image Preview - Smaller */}
                       {answer.imageUrl ? (
                         <img 
                           src={answer.imageUrl} 
                           alt={`Option ${answer.id}`}
-                          className="img-fluid rounded mb-3"
+                          className="img-fluid rounded mb-2"
                           style={{ 
-                            maxHeight: '150px', 
+                            maxHeight: '120px', 
                             objectFit: 'contain',
                             width: '100%'
                           }}
                         />
                       ) : (
-                        <div className="text-center text-muted mb-3" style={{ height: '150px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div className="text-center text-muted mb-2" style={{ height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <div>
                             <div style={{ fontSize: '2rem' }}>🖼️</div>
                             <div className="small">No image</div>
@@ -178,9 +173,9 @@ const CountingQuestion: React.FC<CountingQuestionProps> = ({
                         disabled={showFeedback}
                         className="text-center"
                         style={{ 
-                          fontSize: '2rem',
+                          fontSize: '1.8rem',
                           fontWeight: 'bold',
-                          height: '70px',
+                          height: '60px',
                           color: showFeedback 
                             ? isAnswerCorrect 
                               ? '#198754' 
@@ -197,7 +192,7 @@ const CountingQuestion: React.FC<CountingQuestionProps> = ({
 
                       {/* Show correct answer if wrong */}
                       {showFeedback && !isAnswerCorrect && (
-                        <div className="mt-2 text-center">
+                        <div className="mt-1 text-center">
                           <small className="text-muted">
                             Correct: <strong className="text-success">{answer.blocks[0]?.number || 0}</strong>
                           </small>
