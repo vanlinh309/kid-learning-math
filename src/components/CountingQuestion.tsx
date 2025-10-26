@@ -198,6 +198,7 @@ const CountingQuestion: React.FC<CountingQuestionProps> = ({
                       <Form.Control
                         type="text"
                         inputMode="numeric"
+                        pattern="[0-9]*"
                         value={userAnswers[answer.id] || ''}
                         onChange={(e) => handleInputChange(answer.id, e.target.value)}
                         placeholder="?"
