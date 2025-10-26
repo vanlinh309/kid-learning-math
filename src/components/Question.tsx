@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react'
-import { Card, Row, Col } from 'react-bootstrap'
+import React, { useState, useEffect } from 'react'
+import { Card, Row, Col, Spinner } from 'react-bootstrap'
 import { useAudioFeedback } from '../hooks/useAudioFeedback'
 import './Question.css'
 
@@ -34,6 +34,7 @@ const Question: React.FC<QuestionProps> = ({
   selectedAnswerId 
 }) => {
   const { playCorrectSound, playIncorrectSound, playClickSound } = useAudioFeedback()
+  const [mainImageLoaded, setMainImageLoaded] = useState(false)
 
   // Play sound when an answer is selected and feedback is shown
   useEffect(() => {
@@ -49,10 +50,9 @@ const Question: React.FC<QuestionProps> = ({
     }
   }, [selectedAnswerId, question.answers, playCorrectSound, playIncorrectSound])
 
-  // Reset any internal state when question changes (if needed in future)
+  // Reset image loading state when question changes
   useEffect(() => {
-    // This ensures the component resets when a new question is loaded
-    // Currently, the Question component is stateless, but this is here for future enhancements
+    setMainImageLoaded(false)
   }, [question.id])
   
   const renderShape = (shape: 'square' | 'triangle' | 'circle' | 'rectangle' | 'diamond', size = 30, color = '#dc3545') => {
@@ -231,13 +231,28 @@ const Question: React.FC<QuestionProps> = ({
           {question.imageUrl && (
             <Row className="mb-4">
               <Col xs={12} className="d-flex justify-content-center">
-                <div className="text-center">
+                <div className="text-center position-relative" style={{ minHeight: '300px', width: '100%' }}>
+                  {!mainImageLoaded && (
+                    <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '300px' }}>
+                      <Spinner animation="border" variant="primary" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                      </Spinner>
+                    </div>
+                  )}
                   <img 
-                      src={question.imageUrl} 
-                      alt="Question illustration"
-                      className="img-fluid rounded border"
-                      style={{ maxWidth: '400px', maxHeight: '450px', objectFit: 'contain' }}
-                    />
+                    src={question.imageUrl} 
+                    alt="Question illustration"
+                    className="img-fluid rounded border"
+                    style={{ 
+                      maxWidth: '400px', 
+                      maxHeight: '450px', 
+                      objectFit: 'contain',
+                      display: mainImageLoaded ? 'block' : 'none',
+                      margin: '0 auto'
+                    }}
+                    onLoad={() => setMainImageLoaded(true)}
+                    onError={() => setMainImageLoaded(true)}
+                  />
                 </div>
               </Col>
             </Row>

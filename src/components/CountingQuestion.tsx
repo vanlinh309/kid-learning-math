@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Card, Row, Col, Form, Button } from 'react-bootstrap'
+import { Card, Row, Col, Form, Button, Spinner } from 'react-bootstrap'
 import { useAudioFeedback } from '../hooks/useAudioFeedback'
 import type { QuestionData } from './Question'
 import './Question.css'
@@ -17,6 +17,8 @@ const CountingQuestion: React.FC<CountingQuestionProps> = ({
   const [showFeedback, setShowFeedback] = useState(false)
   const [isCorrect, setIsCorrect] = useState(false)
   const [checkedAnswers, setCheckedAnswers] = useState<Record<string, boolean>>({})
+  const [mainImageLoaded, setMainImageLoaded] = useState(false)
+  const [answerImagesLoaded, setAnswerImagesLoaded] = useState<Record<string, boolean>>({})
   const { playCorrectSound, playIncorrectSound, playClickSound } = useAudioFeedback()
 
   // Reset state when question changes
@@ -25,6 +27,8 @@ const CountingQuestion: React.FC<CountingQuestionProps> = ({
     setShowFeedback(false)
     setIsCorrect(false)
     setCheckedAnswers({})
+    setMainImageLoaded(false)
+    setAnswerImagesLoaded({})
   }, [question.id])
 
   const handleInputChange = (answerId: string, value: string) => {
@@ -95,12 +99,27 @@ const CountingQuestion: React.FC<CountingQuestionProps> = ({
       <Card.Body className="d-flex flex-column">
         {/* Main Question Image */}
         {question.imageUrl && (
-          <div className="text-center mb-4">
+          <div className="text-center mb-4 position-relative" style={{ minHeight: '300px' }}>
+            {!mainImageLoaded && (
+              <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '300px' }}>
+                <Spinner animation="border" variant="primary" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </Spinner>
+              </div>
+            )}
             <img 
               src={question.imageUrl} 
               alt="Question" 
               className="img-fluid rounded shadow-sm"
-              style={{ maxHeight: '500px', objectFit: 'contain', maxWidth: '100%' }}
+              style={{ 
+                maxHeight: '500px', 
+                objectFit: 'contain', 
+                maxWidth: '100%',
+                display: mainImageLoaded ? 'block' : 'none',
+                margin: '0 auto'
+              }}
+              onLoad={() => setMainImageLoaded(true)}
+              onError={() => setMainImageLoaded(true)} // Show even if error to avoid infinite loading
             />
           </div>
         )}
@@ -144,16 +163,28 @@ const CountingQuestion: React.FC<CountingQuestionProps> = ({
                     <Card.Body className="d-flex flex-column align-items-center p-2">
                       {/* Image Preview - Smaller */}
                       {answer.imageUrl ? (
-                        <img 
-                          src={answer.imageUrl} 
-                          alt={`Option ${answer.id}`}
-                          className="img-fluid rounded mb-2"
-                          style={{ 
-                            maxHeight: '120px', 
-                            objectFit: 'contain',
-                            width: '100%'
-                          }}
-                        />
+                        <div className="position-relative w-100 mb-2" style={{ minHeight: '120px' }}>
+                          {!answerImagesLoaded[answer.id] && (
+                            <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '120px' }}>
+                              <Spinner animation="border" variant="primary" size="sm" role="status">
+                                <span className="visually-hidden">Loading...</span>
+                              </Spinner>
+                            </div>
+                          )}
+                          <img 
+                            src={answer.imageUrl} 
+                            alt={`Option ${answer.id}`}
+                            className="img-fluid rounded"
+                            style={{ 
+                              maxHeight: '120px', 
+                              objectFit: 'contain',
+                              width: '100%',
+                              display: answerImagesLoaded[answer.id] ? 'block' : 'none'
+                            }}
+                            onLoad={() => setAnswerImagesLoaded(prev => ({ ...prev, [answer.id]: true }))}
+                            onError={() => setAnswerImagesLoaded(prev => ({ ...prev, [answer.id]: true }))}
+                          />
+                        </div>
                       ) : (
                         <div className="text-center text-muted mb-2" style={{ height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <div>

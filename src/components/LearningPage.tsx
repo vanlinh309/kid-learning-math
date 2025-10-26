@@ -83,6 +83,18 @@ const LearningPage: React.FC = () => {
     loadQuestions()
   }, [category])
 
+  // Automatically select first lesson when questions are loaded
+  useEffect(() => {
+    if (questionsData.length > 0 && !selectedLesson) {
+      const firstLesson: LessonItem = {
+        id: questionsData[0].id,
+        title: questionsData[0].title,
+        questions: [questionsData[0]]
+      }
+      setSelectedLesson(firstLesson)
+    }
+  }, [questionsData, selectedLesson])
+
   const toggleSidebar = () => {
     setSidebarVisible(!sidebarVisible)
   }
