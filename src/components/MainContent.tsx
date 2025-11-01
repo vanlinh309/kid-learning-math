@@ -21,7 +21,6 @@ const MainContent: React.FC<MainContentProps> = ({
   onPreviousLesson,
   canGoNext,
   canGoPrevious,
-  currentIndex,
   totalLessons
 }) => {
   const navigate = useNavigate()
