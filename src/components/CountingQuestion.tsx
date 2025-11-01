@@ -92,11 +92,8 @@ const CountingQuestion: React.FC<CountingQuestionProps> = ({
   }
 
   return (
-    <Card className="h-100 shadow-sm">
-      <Card.Header className="bg-success text-white py-2">
-        <h5 className="mb-0">🔢 {question.title}</h5>
-      </Card.Header>
-      <Card.Body className="d-flex flex-column">
+    <Card className="h-100 border-0 shadow-sm" style={{ backgroundColor: 'transparent' }}>
+      <Card.Body className="d-flex flex-column p-5">
         {/* Main Question Image */}
         {question.imageUrl && (
           <div className="text-center mb-4 position-relative" style={{ minHeight: '300px' }}>
@@ -125,35 +122,36 @@ const CountingQuestion: React.FC<CountingQuestionProps> = ({
         )}
 
         {/* Answer Options (Images with textboxes) */}
-        <div className="mb-4">
+        <div className="mb-5 mt-5">
           <Row className="g-4">
             {question.answers.map((answer) => {
               const isAnswerCorrect = checkedAnswers[answer.id]
               
               return (
                 <Col md={4} key={answer.id}>
-                  <Card 
-                    className={`h-100 ${
-                      showFeedback 
-                        ? isAnswerCorrect 
-                          ? 'border-success border-3' 
-                          : 'border-danger border-3'
-                        : 'border-2'
-                    }`}
-                    style={{ 
-                      transition: 'all 0.3s ease',
-                      position: 'relative'
+                  <Card
+                    className="h-100"
+                    style={{
+                      transition: 'all 0.2s ease',
+                      position: 'relative',
+                      border: showFeedback
+                        ? isAnswerCorrect
+                          ? '2px solid #10B981'
+                          : '2px solid #F59E0B'
+                        : '1px solid #E5E7EB',
+                      borderRadius: '12px',
+                      backgroundColor: 'white'
                     }}
                   >
                     {/* Success/Fail Badge */}
                     {showFeedback && (
-                      <div 
-                        className={`position-absolute top-0 end-0 m-2 badge ${
-                          isAnswerCorrect ? 'bg-success' : 'bg-danger'
-                        }`}
-                        style={{ 
-                          fontSize: '1.5rem',
-                          animation: isAnswerCorrect ? 'bounce 0.5s ease' : 'shake 0.5s ease'
+                      <div
+                        className="position-absolute top-0 end-0 m-2 text-white rounded-circle d-flex align-items-center justify-content-center"
+                        style={{
+                          width: '32px',
+                          height: '32px',
+                          fontSize: '18px',
+                          backgroundColor: isAnswerCorrect ? '#10B981' : '#F59E0B'
                         }}
                       >
                         {isAnswerCorrect ? '✓' : '✗'}
@@ -204,20 +202,20 @@ const CountingQuestion: React.FC<CountingQuestionProps> = ({
                         placeholder="?"
                         disabled={showFeedback}
                         className="text-center"
-                        style={{ 
+                        style={{
                           fontSize: '1.8rem',
                           fontWeight: 'bold',
                           height: '60px',
-                          color: showFeedback 
-                            ? isAnswerCorrect 
-                              ? '#198754' 
-                              : '#dc3545'
-                            : '#007bff',
-                          borderColor: showFeedback 
-                            ? isAnswerCorrect 
-                              ? '#198754' 
-                              : '#dc3545'
-                            : undefined,
+                          color: showFeedback
+                            ? isAnswerCorrect
+                              ? '#10B981'
+                              : '#F59E0B'
+                            : '#6366F1',
+                          borderColor: showFeedback
+                            ? isAnswerCorrect
+                              ? '#10B981'
+                              : '#F59E0B'
+                            : '#E5E7EB',
                           borderWidth: '2px'
                         }}
                       />
@@ -226,7 +224,7 @@ const CountingQuestion: React.FC<CountingQuestionProps> = ({
                       {showFeedback && !isAnswerCorrect && (
                         <div className="mt-1 text-center">
                           <small className="text-muted">
-                            Correct: <strong className="text-success">{answer.blocks[0]?.number || 0}</strong>
+                            Correct: <strong style={{ color: '#10B981' }}>{answer.blocks[0]?.number || 0}</strong>
                           </small>
                         </div>
                       )}
@@ -241,15 +239,16 @@ const CountingQuestion: React.FC<CountingQuestionProps> = ({
         {/* Check Button and Feedback */}
         <div className="text-center">
           {!showFeedback ? (
-            <Button 
-              variant="success" 
+            <Button
               size="lg"
               onClick={handleCheckAnswer}
-              className="px-5 py-3"
-              style={{ 
+              className="px-5 py-3 border-0"
+              style={{
                 fontSize: '1.5rem',
                 borderRadius: '50px',
-                minWidth: '100px'
+                minWidth: '100px',
+                backgroundColor: '#10B981',
+                color: 'white'
               }}
             >
               ✓
@@ -257,25 +256,26 @@ const CountingQuestion: React.FC<CountingQuestionProps> = ({
           ) : (
             <div>
               {/* Feedback Message with Animation */}
-              <div 
-                className={`alert ${isCorrect ? 'alert-success' : 'alert-warning'} animate-fade-in mb-3`}
+              <div
+                className={`alert mb-3 border-0`}
                 style={{
-                  animation: isCorrect ? 'success-pulse 1s ease' : 'error-shake 0.5s ease',
-                  fontSize: '1.2rem'
+                  fontSize: '1.1rem',
+                  backgroundColor: isCorrect ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                  color: isCorrect ? '#10B981' : '#F59E0B'
                 }}
               >
                 <div className="d-flex align-items-center justify-content-center gap-3">
-                  <div style={{ fontSize: '3rem' }}>
-                    {isCorrect ? '🎉' : '😅'}
+                  <div style={{ fontSize: '2.5rem' }}>
+                    {isCorrect ? '🎉' : '💭'}
                   </div>
                   <div>
-                    <h4 className="mb-1">
-                      {isCorrect ? 'Perfect! All Correct!' : 'Good Try! Some answers need correction'}
-                    </h4>
+                    <h5 className="mb-1">
+                      {isCorrect ? 'Perfect!' : 'Try Again'}
+                    </h5>
                     <p className="mb-0">
-                      {isCorrect 
-                        ? 'You counted all the objects correctly! Great job!'
-                        : 'Check the correct answers above and try again!'
+                      {isCorrect
+                        ? 'Great job!'
+                        : 'Check the correct answers'
                       }
                     </p>
                   </div>
@@ -283,17 +283,18 @@ const CountingQuestion: React.FC<CountingQuestionProps> = ({
               </div>
 
               {/* Try Again Button */}
-              <Button 
-                variant="primary" 
+              <Button
                 size="lg"
                 onClick={handleTryAgain}
-                className="px-5 py-3"
-                style={{ 
+                className="px-5 py-3 border-0"
+                style={{
                   fontSize: '1.2rem',
-                  borderRadius: '50px'
+                  borderRadius: '50px',
+                  backgroundColor: '#6366F1',
+                  color: 'white'
                 }}
               >
-                🔄 Try Again
+                Try Again
               </Button>
             </div>
           )}

@@ -159,108 +159,80 @@ const LearningPage: React.FC = () => {
   }
 
   return (
-    <div className="vh-100 d-flex flex-column">
-      {/* Top Navigation Bar */}
-      <div className="bg-white border-bottom p-2 d-flex align-items-center justify-content-between">
-        <div className="d-flex align-items-center gap-2">
-          <Button 
-            variant="outline-primary" 
-            size="sm" 
-            className="d-lg-none"
-            onClick={toggleSidebar}
-          >
-            <List size={20} />
-          </Button>
-          <h5 className="mb-0 text-primary">
-            {category === 'counting' ? '🔢 Counting Lessons' : '👁️ Object Recognition'}
-          </h5>
-        </div>
-        <Button 
-          variant="outline-secondary" 
-          size="sm"
-          onClick={() => navigate('/')}
-        >
-          <House size={16} className="me-1" />
-          Home
-        </Button>
-      </div>
+    <div className="vh-100 d-flex flex-column position-relative" style={{ backgroundColor: '#FAFBFC' }}>
+      {/* Floating Menu Button - Top Left */}
+      <Button
+        variant="light"
+        className="position-fixed shadow-sm"
+        onClick={toggleSidebar}
+        style={{
+          top: '20px',
+          left: '20px',
+          width: '48px',
+          height: '48px',
+          borderRadius: '50%',
+          zIndex: 1050,
+          border: '1px solid #E5E7EB',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+      >
+        <List size={20} />
+      </Button>
 
-      {/* Main Content Area */}
-      <div className="flex-grow-1 d-flex overflow-hidden position-relative">
-        <Row className="g-0 w-100 h-100">
-          {/* Sidebar - Desktop only (1200px+) */}
-          <Col lg={3} className="d-none d-lg-block border-end bg-light h-100">
-            <Sidebar 
-              onLessonSelect={handleLessonSelect}
-              questionsData={questionsData}
-              loading={loading}
-            />
-          </Col>
+      {/* Floating Close Button - Top Right */}
+      <Button
+        variant="light"
+        className="position-fixed shadow-sm"
+        onClick={() => navigate('/')}
+        style={{
+          top: '20px',
+          right: '20px',
+          width: '48px',
+          height: '48px',
+          borderRadius: '50%',
+          zIndex: 1050,
+          border: '1px solid #E5E7EB',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+      >
+        <House size={20} />
+      </Button>
 
-          {/* Sidebar - Mobile/Tablet (Offcanvas) */}
-          <Offcanvas 
-            show={sidebarVisible} 
-            onHide={toggleSidebar}
-            placement="start"
-            className="w-75"
-          >
-            <Offcanvas.Header closeButton>
-              <Offcanvas.Title>Lessons</Offcanvas.Title>
-            </Offcanvas.Header>
-            <Offcanvas.Body className="p-0">
-              <Sidebar 
-                onLessonSelect={handleLessonSelect}
-                questionsData={questionsData}
-                loading={loading}
-              />
-            </Offcanvas.Body>
-          </Offcanvas>
+      {/* Sidebar - Overlay Only (All devices) */}
+      <Offcanvas
+        show={sidebarVisible}
+        onHide={toggleSidebar}
+        placement="start"
+        className="w-75"
+        style={{ maxWidth: '320px' }}
+      >
+        <Offcanvas.Header closeButton>
+          <Offcanvas.Title>Lessons</Offcanvas.Title>
+        </Offcanvas.Header>
+        <Offcanvas.Body className="p-0">
+          <Sidebar
+            onLessonSelect={handleLessonSelect}
+            questionsData={questionsData}
+            loading={loading}
+          />
+        </Offcanvas.Body>
+      </Offcanvas>
 
-          {/* Main Content */}
-          <Col lg={9} className="h-100 overflow-auto">
-            <MainContent selectedLesson={selectedLesson} />
-          </Col>
-        </Row>
-
-        {/* Navigation Buttons for Tablet (768px - 1199px) */}
-        {selectedLesson && (
-          <>
-            <Button
-              variant="light"
-              className="d-none d-md-flex d-lg-none position-fixed align-items-center justify-content-center border shadow"
-              onClick={handlePreviousLesson}
-              disabled={!canGoPrevious()}
-              style={{
-                left: '10px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                width: '50px',
-                height: '50px',
-                borderRadius: '50%',
-                zIndex: 1000
-              }}
-            >
-              <ChevronLeft size={28} />
-            </Button>
-            <Button
-              variant="light"
-              className="d-none d-md-flex d-lg-none position-fixed align-items-center justify-content-center border shadow"
-              onClick={handleNextLesson}
-              disabled={!canGoNext()}
-              style={{
-                right: '10px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                width: '50px',
-                height: '50px',
-                borderRadius: '50%',
-                zIndex: 1000
-              }}
-            >
-              <ChevronRight size={28} />
-            </Button>
-          </>
-        )}
+      {/* Main Content - Full Screen */}
+      <div className="flex-grow-1 d-flex overflow-auto">
+        <MainContent
+          selectedLesson={selectedLesson}
+          onNextLesson={handleNextLesson}
+          onPreviousLesson={handlePreviousLesson}
+          canGoNext={canGoNext()}
+          canGoPrevious={canGoPrevious()}
+          currentIndex={getCurrentLessonIndex()}
+          totalLessons={questionsData.length}
+        />
       </div>
     </div>
   )

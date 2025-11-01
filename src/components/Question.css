@@ -1,178 +1,36 @@
-/* Question animations for kid-friendly feedback */
+/* Question animations - Minimal and subtle */
 
 /* Correct answer celebration animation */
 .animate-correct-answer {
-  animation: celebrate 0.8s ease-in-out;
+  animation: subtle-pop 0.3s ease-out;
 }
 
-@keyframes celebrate {
+@keyframes subtle-pop {
   0% {
     transform: scale(1);
   }
-  25% {
-    transform: scale(1.1) rotate(2deg);
-  }
   50% {
-    transform: scale(1.15) rotate(-1deg);
-  }
-  75% {
-    transform: scale(1.1) rotate(1deg);
+    transform: scale(1.02);
   }
   100% {
-    transform: scale(1.05);
+    transform: scale(1);
   }
 }
 
-/* Incorrect answer gentle shake with encouragement */
+/* Incorrect answer gentle shake */
 .animate-incorrect-answer {
-  animation: gentle-shake 0.6s ease-in-out, gentle-glow 2s ease-in-out infinite 0.6s;
+  animation: gentle-shake 0.4s ease-out;
 }
 
 @keyframes gentle-shake {
   0%, 100% {
     transform: translateX(0);
   }
-  15% {
-    transform: translateX(-8px) rotate(-1deg);
-  }
-  30% {
-    transform: translateX(8px) rotate(1deg);
-  }
-  45% {
-    transform: translateX(-6px) rotate(-0.5deg);
-  }
-  60% {
-    transform: translateX(6px) rotate(0.5deg);
-  }
-  75% {
+  25% {
     transform: translateX(-3px);
   }
-  85% {
-    transform: translateX(3px);
-  }
-}
-
-/* Gentle orange glow for "try again" feeling */
-@keyframes gentle-glow {
-  0%, 100% {
-    box-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(255, 193, 7, 0.6);
-  }
-}
-
-/* Bounce animation for checkmark */
-.animate-bounce {
-  animation: bounce-in 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-@keyframes bounce-in {
-  0% {
-    transform: scale(0);
-    opacity: 0;
-  }
-  60% {
-    transform: scale(1.2);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-/* Pulse animation for sparkles */
-.animate-pulse {
-  animation: sparkle-pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes sparkle-pulse {
-  0%, 100% {
-    opacity: 0.4;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.2);
-  }
-}
-
-/* Wobble animation for incorrect answer X mark */
-.animate-wobble {
-  animation: wobble-in 0.7s cubic-bezier(0.36, 0.07, 0.19, 0.97);
-}
-
-@keyframes wobble-in {
-  0% {
-    transform: scale(0) rotate(0deg);
-    opacity: 0;
-  }
-  25% {
-    transform: scale(0.8) rotate(-10deg);
-    opacity: 0.7;
-  }
-  50% {
-    transform: scale(1.1) rotate(5deg);
-    opacity: 0.9;
-  }
   75% {
-    transform: scale(0.95) rotate(-3deg);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1) rotate(0deg);
-    opacity: 1;
-  }
-}
-
-/* Fade in animation for thinking emojis */
-.animate-fade-in {
-  animation: fade-in-bounce 1s ease-out;
-}
-
-@keyframes fade-in-bounce {
-  0% {
-    opacity: 0;
-    transform: translateY(-10px) scale(0.8);
-  }
-  60% {
-    opacity: 0.8;
-    transform: translateY(0px) scale(1.1);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0px) scale(1);
-  }
-}
-
-/* Encouraging pulse for incorrect answers */
-.animate-encourage {
-  animation: encourage-pulse 2s ease-in-out infinite;
-}
-
-@keyframes encourage-pulse {
-  0%, 100% {
-    transform: scale(1);
-    filter: brightness(1);
-  }
-  50% {
-    transform: scale(1.02);
-    filter: brightness(1.1);
-  }
-}
-
-/* Glow effect for correct answers */
-.animate-correct-answer {
-  animation: celebrate 0.8s ease-in-out, glow-pulse 2s ease-in-out infinite 0.8s;
-}
-
-@keyframes glow-pulse {
-  0%, 100% {
-    box-shadow: 0 0 15px rgba(25, 135, 84, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 25px rgba(25, 135, 84, 0.8);
+    transform: translateX(3px);
   }
 }
 
@@ -180,17 +38,4 @@
 .card:hover {
   transform: translateY(-2px);
   transition: all 0.2s ease;
-}
-
-/* Fun color transition for shapes when answer is correct */
-.animate-correct-answer .shape-celebration {
-  animation: rainbow-colors 2s ease-in-out infinite;
-}
-
-@keyframes rainbow-colors {
-  0% { filter: hue-rotate(0deg) brightness(1); }
-  25% { filter: hue-rotate(90deg) brightness(1.2); }
-  50% { filter: hue-rotate(180deg) brightness(1.1); }
-  75% { filter: hue-rotate(270deg) brightness(1.2); }
-  100% { filter: hue-rotate(360deg) brightness(1); }
 }

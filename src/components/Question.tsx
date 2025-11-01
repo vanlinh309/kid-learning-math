@@ -150,58 +150,48 @@ const Question: React.FC<QuestionProps> = ({
 
     const cardStyle = {
       cursor: 'pointer',
-      transition: 'all 0.3s ease',
-      ...(selectedAnswerId === answer.id && answer.isCorrect && {
-        boxShadow: '0 0 20px rgba(25, 135, 84, 0.6)',
-        transform: 'scale(1.05)'
-      }),
-      ...(selectedAnswerId === answer.id && !answer.isCorrect && {
-        boxShadow: '0 0 15px rgba(255, 193, 7, 0.5)',
-        transform: 'scale(0.98)'
-      })
+      transition: 'all 0.2s ease',
+      backgroundColor: 'white'
     }
 
     return (
-      <Col md={4} key={answer.id} className="mb-3">
-        <Card 
-          className={`h-100 ${borderClass} ${bgClass} ${animationClass} border-2`}
-          style={cardStyle}
+      <Col md={4} key={answer.id} className="mb-4">
+        <Card
+          className={`h-100 ${borderClass} ${bgClass} ${animationClass}`}
+          style={{
+            ...cardStyle,
+            border: selectedAnswerId === answer.id
+              ? answer.isCorrect
+                ? '2px solid #10B981'
+                : '2px solid #F59E0B'
+              : '1px solid #E5E7EB',
+            borderRadius: '16px',
+            minHeight: '120px'
+          }}
           onClick={() => {
             playClickSound()
             onAnswerSelect?.(answer.id)
           }}
         >
-          <Card.Body className="d-flex flex-column justify-content-center p-4 position-relative">
+          <Card.Body className="d-flex flex-column justify-content-center p-5 position-relative">
             {/* Success celebration elements */}
             {selectedAnswerId === answer.id && answer.isCorrect && (
-              <>
-                {/* Animated checkmark */}
-                <div className="position-absolute top-0 end-0 m-2">
-                  <div className="bg-success text-white rounded-circle d-flex align-items-center justify-content-center animate-bounce" 
-                       style={{ width: '30px', height: '30px', fontSize: '16px' }}>
-                    ✓
-                  </div>
+              <div className="position-absolute top-0 end-0 m-2">
+                <div className="text-white rounded-circle d-flex align-items-center justify-content-center"
+                     style={{ width: '32px', height: '32px', fontSize: '18px', backgroundColor: '#10B981' }}>
+                  ✓
                 </div>
-                {/* Sparkle effects */}
-                <div className="position-absolute top-0 start-0 animate-pulse" style={{ fontSize: '20px' }}>✨</div>
-                <div className="position-absolute bottom-0 end-0 animate-pulse" style={{ fontSize: '20px', animationDelay: '0.5s' }}>🌟</div>
-              </>
+              </div>
             )}
 
             {/* Incorrect answer feedback elements */}
             {selectedAnswerId === answer.id && !answer.isCorrect && (
-              <>
-                {/* Animated X mark */}
-                <div className="position-absolute top-0 end-0 m-2">
-                  <div className="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center animate-wobble" 
-                       style={{ width: '30px', height: '30px', fontSize: '14px' }}>
-                    ❌
-                  </div>
+              <div className="position-absolute top-0 end-0 m-2">
+                <div className="text-white rounded-circle d-flex align-items-center justify-content-center"
+                     style={{ width: '32px', height: '32px', fontSize: '16px', backgroundColor: '#F59E0B' }}>
+                  ✗
                 </div>
-                {/* Try again encouragement */}
-                <div className="position-absolute top-0 start-0 animate-fade-in" style={{ fontSize: '16px' }}>🤔</div>
-                <div className="position-absolute bottom-0 end-0 animate-fade-in" style={{ fontSize: '16px', animationDelay: '0.3s' }}>💭</div>
-              </>
+              </div>
             )}
             
             {answer.blocks.map((block, index) => (
@@ -222,30 +212,27 @@ const Question: React.FC<QuestionProps> = ({
 
   return (
     <div className="question-container">
-      <Card className="mb-4">
-        <Card.Header className="bg-primary text-white">
-          <h4 className="mb-0">{question.title}</h4>
-        </Card.Header>
-        <Card.Body>
+      <Card className="border-0 shadow-sm" style={{ backgroundColor: 'transparent' }}>
+        <Card.Body className="p-5">
           {/* First Row - Image Section */}
           {question.imageUrl && (
-            <Row className="mb-4">
+            <Row className="mb-6">
               <Col xs={12} className="d-flex justify-content-center">
-                <div className="text-center position-relative" style={{ minHeight: '300px', width: '100%' }}>
+                <div className="text-center position-relative" style={{ minHeight: '350px', width: '100%' }}>
                   {!mainImageLoaded && (
-                    <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '300px' }}>
-                      <Spinner animation="border" variant="primary" role="status">
+                    <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '350px' }}>
+                      <Spinner animation="border" style={{ color: '#6366F1' }} role="status">
                         <span className="visually-hidden">Loading...</span>
                       </Spinner>
                     </div>
                   )}
-                  <img 
-                    src={question.imageUrl} 
+                  <img
+                    src={question.imageUrl}
                     alt="Question illustration"
-                    className="img-fluid rounded border"
-                    style={{ 
-                      maxWidth: '400px', 
-                      maxHeight: '450px', 
+                    className="img-fluid rounded"
+                    style={{
+                      maxWidth: '500px',
+                      maxHeight: '500px',
                       objectFit: 'contain',
                       display: mainImageLoaded ? 'block' : 'none',
                       margin: '0 auto'
@@ -261,22 +248,9 @@ const Question: React.FC<QuestionProps> = ({
           {/* Second Row - Answer Section */}
           <Row>
             <Col xs={12} className="d-flex flex-column align-items-center">
-              <h5 className="mb-3 text-center">Choose the correct answer:</h5>
-              <Row className="justify-content-center w-100">
+              <Row className="justify-content-center w-100 mt-5">
                 {question.answers.map(answer => renderAnswerBlock(answer))}
               </Row>
-              
-              {/* {selectedAnswerId && (
-                <div className="text-center mt-3">
-                  <Button 
-                    variant="success" 
-                    size="lg"
-                    onClick={() => alert('Great job! You selected an answer!')}
-                  >
-                    Submit Answer
-                  </Button>
-                </div>
-              )} */}
             </Col>
           </Row>
         </Card.Body>
