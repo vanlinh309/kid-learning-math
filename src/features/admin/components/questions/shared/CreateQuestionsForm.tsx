@@ -1,11 +1,11 @@
 import React, { useState, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button, Container, Row, Col, Card, Alert, Modal } from 'react-bootstrap'
-import { saveQuestionWithAnswers } from '../utils/supabase'
-import QuestionForm from './QuestionForm'
-import CountingQuestionForm from './CountingQuestionForm'
-import QuestionNavigationSidebar from './QuestionNavigationSidebar'
-import type { QuestionData } from './Question'
+import { saveQuestionWithAnswers } from '../../../../../core/api/supabase'
+import { RecognizeObjectQuestionForm } from '../recognize-object'
+import { CountingQuestionForm } from '../counting'
+import { QuestionNavigationSidebar } from '../../navigation'
+import type { QuestionData } from '../../../../learning/components/lessons/RecognizeObjectLesson'
 import { v4 as uuidv4 } from 'uuid'
 
 // Function to generate UUID
@@ -324,7 +324,7 @@ const MultipleQuestionsForm: React.FC<MultipleQuestionsFormProps> = ({
                     onQuestionDataChange={handleQuestionDataChange}
                   />
                 ) : (
-                  <QuestionForm
+                  <RecognizeObjectQuestionForm
                     question={question.questionData}
                     showCardWrapper={false}
                     questionId={question.id}

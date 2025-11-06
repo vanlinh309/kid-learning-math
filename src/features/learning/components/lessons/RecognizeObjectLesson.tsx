@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Card, Row, Col, Spinner } from 'react-bootstrap'
-import { useAudioFeedback } from '../hooks/useAudioFeedback'
-import './Question.css'
+import { useAudioFeedback } from '../../hooks/useAudioFeedback'
+import './RecognizeObjectLesson.css'
 
 export interface Answer {
   id: string
@@ -18,7 +18,7 @@ export interface QuestionData {
   id: string
   title: string
   imageUrl?: string
-  category?: 'recognize_object' | 'counting' | 'shapes' | 'colors' | 'patterns'
+  category?: 'recognize_object' | 'counting' | 'calculation' | 'shapes' | 'colors' | 'patterns'
   answers: Answer[]
 }
 

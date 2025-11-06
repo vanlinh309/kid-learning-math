@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button, Offcanvas } from 'react-bootstrap'
-import { List, House} from 'react-bootstrap-icons'
+import { List, House } from 'react-bootstrap-icons'
 import Sidebar from './Sidebar'
 import MainContent from './MainContent'
-import { fetchQuestionsWithAnswers } from '../utils/supabase'
-import type { LessonItem } from '../data/lessons'
-import type { QuestionData } from './Question'
+import { fetchQuestionsWithAnswers } from '../../../../core/api/supabase'
+import type { LessonItem } from '../../../../data/lessons'
+import type { QuestionData } from '../lessons/RecognizeObjectLesson'
 
 const LearningPage: React.FC = () => {
   const { category } = useParams<{ category: string }>()
@@ -21,6 +21,20 @@ const LearningPage: React.FC = () => {
     const loadQuestions = async () => {
       try {
         setLoading(true)
+        
+        // Special handling for calculation category (doesn't need database questions)
+        if (category === 'calculation') {
+          const calculationLesson: QuestionData[] = [{
+            id: 'calculation-1',
+            title: 'Practice Calculation',
+            category: 'calculation',
+            answers: [] // Not needed for calculation lesson
+          }]
+          setQuestionsData(calculationLesson)
+          setLoading(false)
+          return
+        }
+        
         const result = await fetchQuestionsWithAnswers(category)
         
         if (result.success && result.questions) {
@@ -39,7 +53,7 @@ const LearningPage: React.FC = () => {
             id: dbQuestion.id,
             title: dbQuestion.title || 'Untitled Question',
             imageUrl: dbQuestion.image_url || '',
-            category: dbQuestion.category as 'recognize_object' | 'counting' | 'shapes' | 'colors' | 'patterns',
+            category: dbQuestion.category as 'recognize_object' | 'counting' | 'calculation' | 'shapes' | 'colors' | 'patterns',
             answers: dbQuestion.answer?.map((answer, index: number) => {
               // Check if it's a counting question (content is an object with image_url and correct_number)
               if (dbQuestion.category === 'counting' && typeof answer.content === 'object' && 'image_url' in answer.content) {

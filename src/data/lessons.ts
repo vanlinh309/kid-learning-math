@@ -1,4 +1,4 @@
-import type { QuestionData } from '../components/Question'
+import type { QuestionData } from '../features/learning/components/lessons/RecognizeObjectLesson'
 
 export interface LessonItem {
   id: string
@@ -19,6 +19,10 @@ export const categories: Category[] = [
   {
     id: 'counting',
     title: 'Counting'
+  },
+  {
+    id: 'calculation',
+    title: 'Calculation'
   },
   {
     id: 'shapes',

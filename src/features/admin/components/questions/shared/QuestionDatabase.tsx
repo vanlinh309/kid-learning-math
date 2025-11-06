@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Card, Button, Alert, Spinner, Row, Col, Badge } from 'react-bootstrap'
-import { fetchQuestionsWithAnswers, deleteQuestionWithAnswers } from '../utils/supabase'
+import { fetchQuestionsWithAnswers, deleteQuestionWithAnswers } from '../../../../../core/api/supabase'
 
 interface DatabaseQuestion {
   id: string

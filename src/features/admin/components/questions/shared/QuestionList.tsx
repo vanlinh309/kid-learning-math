@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { Card, Table, Button, Spinner, Alert, OverlayTrigger, Tooltip, Modal } from 'react-bootstrap'
-import { fetchQuestions, deleteQuestionWithAnswers, fetchQuestionWithAnswersById, type QuestionDB } from '../utils/supabase'
-import QuestionForm from './QuestionForm'
-import type { QuestionData } from './Question'
+import { fetchQuestions, deleteQuestionWithAnswers, fetchQuestionWithAnswersById, type QuestionDB } from '../../../../../core/api/supabase'
+import { RecognizeObjectQuestionForm } from '../recognize-object'
+import type { QuestionData } from '../../../../learning/components/lessons/RecognizeObjectLesson'
 
 // Types for database response
 interface DatabaseAnswer {
@@ -253,7 +253,7 @@ const QuestionList: React.FC<QuestionListProps> = ({
               <div className="mt-2">Loading question details...</div>
             </div>
           ) : selectedQuestion ? (
-            <QuestionForm
+            <RecognizeObjectQuestionForm
               question={selectedQuestion}
               showCardWrapper={false}
               questionId={selectedQuestion.id}

@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { Button, Container, Row, Col, Offcanvas } from 'react-bootstrap'
 import { List } from 'react-bootstrap-icons'
-import Sidebar from './Sidebar'
-import MainContent from './MainContent'
-import { fetchQuestionsWithAnswers } from '../utils/supabase'
-import type { LessonItem } from '../data/lessons'
-import type { QuestionData } from './Question'
+import { Sidebar, MainContent } from '../../learning/components/layout'
+import { fetchQuestionsWithAnswers } from '../../../core/api/supabase'
+import type { LessonItem } from '../../../data/lessons'
+import type { QuestionData } from '../../learning/components/lessons/RecognizeObjectLesson'
 
 const Layout: React.FC = () => {
   const [sidebarVisible, setSidebarVisible] = useState(false)

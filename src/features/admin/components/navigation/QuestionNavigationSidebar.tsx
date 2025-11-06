@@ -1,6 +1,6 @@
 import React from 'react'
 import { Card, ListGroup, Badge } from 'react-bootstrap'
-import type { QuestionData } from './Question'
+import type { QuestionData } from '../../../learning/components/lessons/RecognizeObjectLesson'
 
 interface QuestionInstance {
   id: string

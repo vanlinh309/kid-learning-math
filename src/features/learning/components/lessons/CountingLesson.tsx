@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import { Card, Row, Col, Form, Button, Spinner } from 'react-bootstrap'
-import { useAudioFeedback } from '../hooks/useAudioFeedback'
-import type { QuestionData } from './Question'
-import './Question.css'
+import { Card, Row, Col, Button, Spinner } from 'react-bootstrap'
+import { useAudioFeedback } from '../../hooks/useAudioFeedback'
+import type { QuestionData } from './RecognizeObjectLesson'
+import './RecognizeObjectLesson.css'
 
 interface CountingQuestionProps {
   question: QuestionData
@@ -19,7 +19,29 @@ const CountingQuestion: React.FC<CountingQuestionProps> = ({
   const [checkedAnswers, setCheckedAnswers] = useState<Record<string, boolean>>({})
   const [mainImageLoaded, setMainImageLoaded] = useState(false)
   const [answerImagesLoaded, setAnswerImagesLoaded] = useState<Record<string, boolean>>({})
+  const [numberOptions, setNumberOptions] = useState<Record<string, number[]>>({})
   const { playCorrectSound, playIncorrectSound, playClickSound } = useAudioFeedback()
+
+  // Generate 3 number options for each answer (including the correct one)
+  const generateNumberOptions = (correctNumber: number): number[] => {
+    const options = [correctNumber]
+    
+    // Generate 2 other numbers that are different from the correct one
+    while (options.length < 3) {
+      // Random offset between -2 and +2, but not 0
+      const offset = Math.floor(Math.random() * 5) - 2
+      if (offset === 0) continue
+      
+      const newNumber = correctNumber + offset
+      // Ensure positive number and not duplicate
+      if (newNumber > 0 && !options.includes(newNumber)) {
+        options.push(newNumber)
+      }
+    }
+    
+    // Shuffle the array to randomize position
+    return options.sort(() => Math.random() - 0.5)
+  }
 
   // Reset state when question changes
   useEffect(() => {
@@ -29,7 +51,15 @@ const CountingQuestion: React.FC<CountingQuestionProps> = ({
     setCheckedAnswers({})
     setMainImageLoaded(false)
     setAnswerImagesLoaded({})
-  }, [question.id])
+    
+    // Generate number options for each answer
+    const options: Record<string, number[]> = {}
+    question.answers.forEach(answer => {
+      const correctNumber = answer.blocks[0]?.number || 1
+      options[answer.id] = generateNumberOptions(correctNumber)
+    })
+    setNumberOptions(options)
+  }, [question.id, question.answers])
 
   const handleInputChange = (answerId: string, value: string) => {
     // Only allow numbers
@@ -192,39 +222,77 @@ const CountingQuestion: React.FC<CountingQuestionProps> = ({
                         </div>
                       )}
 
-                      {/* Number Input Below Image */}
-                      <Form.Control
-                        type="text"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        value={userAnswers[answer.id] || ''}
-                        onChange={(e) => handleInputChange(answer.id, e.target.value)}
-                        placeholder="?"
-                        disabled={showFeedback}
-                        className="text-center"
-                        style={{
-                          fontSize: '1.8rem',
-                          fontWeight: 'bold',
-                          height: '60px',
-                          color: showFeedback
-                            ? isAnswerCorrect
-                              ? '#10B981'
-                              : '#F59E0B'
-                            : '#6366F1',
-                          borderColor: showFeedback
-                            ? isAnswerCorrect
-                              ? '#10B981'
-                              : '#F59E0B'
-                            : '#E5E7EB',
-                          borderWidth: '2px'
-                        }}
-                      />
+                      {/* Number Selection Blocks */}
+                      <div className="d-flex gap-3 justify-content-center w-100 mt-3">
+                        {numberOptions[answer.id]?.map((num, index) => {
+                          const isSelected = userAnswers[answer.id] === num.toString()
+                          const correctNumber = answer.blocks[0]?.number || 0
+                          const isCorrectOption = num === correctNumber
+                          
+                          return (
+                            <button
+                              key={index}
+                              disabled={showFeedback}
+                              onClick={() => {
+                                playClickSound()
+                                handleInputChange(answer.id, num.toString())
+                              }}
+                              className={`number-block ${isSelected ? 'selected' : ''} ${
+                                showFeedback
+                                  ? isCorrectOption
+                                    ? 'correct'
+                                    : isSelected
+                                    ? 'incorrect'
+                                    : 'disabled'
+                                  : ''
+                              }`}
+                              style={{
+                                fontSize: '1.5rem',
+                                fontWeight: 'normal',
+                                width: '70px',
+                                height: '70px',
+                                borderRadius: '12px',
+                                border: 'none',
+                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                cursor: showFeedback ? 'not-allowed' : 'pointer',
+                                position: 'relative',
+                                background: showFeedback
+                                  ? isCorrectOption
+                                    ? 'linear-gradient(135deg, #34D399 0%, #10B981 100%)'
+                                    : isSelected
+                                    ? 'linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%)'
+                                    : 'linear-gradient(135deg, #E5E7EB 0%, #D1D5DB 100%)'
+                                  : isSelected
+                                  ? 'linear-gradient(135deg, #60A5FA 0%, #818CF8 100%)'
+                                  : 'linear-gradient(135deg, #E0E7FF 0%, #F3E8FF 100%)',
+                                color: showFeedback
+                                  ? '#FFFFFF'
+                                  : isSelected
+                                  ? '#FFFFFF'
+                                  : '#6366F1',
+                                transform: isSelected && !showFeedback ? 'scale(1.15) rotate(-3deg)' : 'scale(1)',
+                                boxShadow: isSelected && !showFeedback
+                                  ? '0 8px 20px rgba(96, 165, 250, 0.4)'
+                                  : showFeedback && isCorrectOption
+                                  ? '0 8px 20px rgba(16, 185, 129, 0.4)'
+                                  : '0 2px 8px rgba(0, 0, 0, 0.08)',
+                                animation: !showFeedback && !isSelected ? 'gentle-pulse 2s ease-in-out infinite' : 'none',
+                                opacity: showFeedback && !isCorrectOption && !isSelected ? 0.5 : 1
+                              }}
+                            >
+                              {showFeedback && isCorrectOption && '⭐ '}
+                              {showFeedback && isSelected && !isCorrectOption && '😊 '}
+                              {num}
+                            </button>
+                          )
+                        })}
+                      </div>
 
                       {/* Show correct answer if wrong */}
                       {showFeedback && !isAnswerCorrect && (
-                        <div className="mt-1 text-center">
-                          <small className="text-muted">
-                            Correct: <strong style={{ color: '#10B981' }}>{answer.blocks[0]?.number || 0}</strong>
+                        <div className="mt-2 text-center animate-fade-in">
+                          <small className="text-success fw-bold">
+                            ✓ Correct answer: {answer.blocks[0]?.number || 0}
                           </small>
                         </div>
                       )}
@@ -327,13 +395,50 @@ const CountingQuestion: React.FC<CountingQuestionProps> = ({
           75% { transform: translateX(-15px); }
         }
         
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes gentle-pulse {
+          0%, 100% { 
+            transform: scale(1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+          }
+          50% { 
+            transform: scale(1.03);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+          }
+        }
+        
         .animate-fade-in {
           animation: fadeIn 0.5s ease;
         }
         
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(-20px); }
-          to { opacity: 1; transform: translateY(0); }
+        .number-block {
+          -webkit-tap-highlight-color: transparent;
+          user-select: none;
+        }
+        
+        .number-block:hover:not(:disabled):not(.disabled) {
+          transform: scale(1.08) !important;
+          box-shadow: 0 6px 16px rgba(99, 102, 241, 0.25) !important;
+        }
+        
+        .number-block:active:not(:disabled):not(.disabled) {
+          transform: scale(0.95) !important;
+        }
+        
+        .number-block.selected {
+          animation: bounce 0.4s ease;
+        }
+        
+        .number-block.correct {
+          animation: success-pulse 0.6s ease;
+        }
+        
+        .number-block.incorrect {
+          animation: error-shake 0.5s ease;
         }
       `}</style>
     </Card>

@@ -1,11 +1,9 @@
 import React, { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Container, Row, Col, Navbar, Button } from 'react-bootstrap'
-import QuestionForm from './QuestionForm'
-import QuestionList from './QuestionList'
-import CreateQuestionsForm from './CreateQuestionsForm'
+import { RecognizeObjectQuestionForm, QuestionList, CreateQuestionsForm } from '../questions'
 import AdminSidebar from './AdminSidebar'
-import type { QuestionData } from './Question'
+import type { QuestionData } from '../../../learning/components/lessons/RecognizeObjectLesson'
 import './AdminLayout.css'
 
 type AdminSection = 'home' | 'object-recognition-list' | 'object-recognition-new' | 'counting-list' | 'counting-new' | 'questions-edit'
@@ -100,7 +98,7 @@ const AdminLayout: React.FC = () => {
       case 'object-recognition-new':
         if (editingQuestion) {
           return (
-            <QuestionForm
+            <RecognizeObjectQuestionForm
               question={editingQuestion}
             />
           )
@@ -115,7 +113,7 @@ const AdminLayout: React.FC = () => {
       case 'counting-new':
         if (editingQuestion) {
           return (
-            <QuestionForm
+            <RecognizeObjectQuestionForm
               question={editingQuestion}
             />
           )
@@ -129,7 +127,7 @@ const AdminLayout: React.FC = () => {
         }
       case 'questions-edit':
         return (
-          <QuestionForm
+          <RecognizeObjectQuestionForm
             question={editingQuestion}
           />
         )

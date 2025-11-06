@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react'
 import { Form, Nav, Collapse, Spinner, Alert } from 'react-bootstrap'
 import { Search, ChevronDown, ChevronRight } from 'react-bootstrap-icons'
-import { categories } from '../data/lessons'
-import type { LessonItem } from '../data/lessons'
-import type { QuestionData } from './Question'
+import { categories } from '../../../../data/lessons'
+import type { LessonItem } from '../../../../data/lessons'
+import type { QuestionData } from '../lessons/RecognizeObjectLesson'
 
 interface SidebarProps {
   onLessonSelect: (lesson: LessonItem) => void

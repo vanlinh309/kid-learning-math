@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Card, Form, Button, Row, Col } from 'react-bootstrap'
-import type { QuestionData } from './Question'
+import type { QuestionData } from '../../../../learning/components/lessons/RecognizeObjectLesson'
 
 interface QuestionFormProps {
   question?: QuestionData | null

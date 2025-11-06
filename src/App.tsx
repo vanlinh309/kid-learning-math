@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import HomePage from './components/HomePage'
-import AdminPage from './components/AdminPage'
-import LearningPage from './components/LearningPage'
+import { HomePage } from './features/home/components'
+import { AdminPage } from './features/admin/components/layout'
+import { LearningPage } from './features/learning/components/layout'
 import './App.css'
 
 function App() {

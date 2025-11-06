@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { Container, Card } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
-import Question from './Question'
-import CountingQuestion from './CountingQuestion'
-import type { LessonItem } from '../data/lessons'
+import { RecognizeObjectLesson, CountingLesson, CalculationLesson } from '../lessons'
+import type { LessonItem } from '../../../../data/lessons'
 
 interface MainContentProps {
   selectedLesson?: LessonItem
@@ -73,11 +72,13 @@ const MainContent: React.FC<MainContentProps> = ({
             <div className="flex-grow-1">
               {selectedLesson.questions.length > 0 ? (
                 selectedLesson.questions[currentQuestionIndex].category === 'counting' ? (
-                  <CountingQuestion
+                  <CountingLesson
                     question={selectedLesson.questions[currentQuestionIndex]}
                   />
+                ) : selectedLesson.questions[currentQuestionIndex].category === 'calculation' ? (
+                  <CalculationLesson />
                 ) : (
-                  <Question
+                  <RecognizeObjectLesson
                     question={selectedLesson.questions[currentQuestionIndex]}
                     onAnswerSelect={handleAnswerSelect}
                     selectedAnswerId={selectedAnswerId}
@@ -163,6 +164,18 @@ const MainContent: React.FC<MainContentProps> = ({
                         <span className="fs-4">🔢</span>
                       </div>
                       <p className="mt-2 mb-0 small">Counting</p>
+                    </div>
+                    <div
+                      className="text-center"
+                      style={{ cursor: 'pointer', transition: 'transform 0.2s ease' }}
+                      onClick={() => navigate('/learn/calculation')}
+                      onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                      onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                    >
+                      <div className="text-white rounded-circle d-inline-flex align-items-center justify-content-center" style={{ width: '60px', height: '60px', backgroundColor: '#8B5CF6' }}>
+                        <span className="fs-4">🧮</span>
+                      </div>
+                      <p className="mt-2 mb-0 small">Calculation</p>
                     </div>
                   </div>
                 </div>
